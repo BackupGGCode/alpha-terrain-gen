@@ -11,8 +11,8 @@
 
 #include "heightgen.h"
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+#define SCREEN_WIDTH 256
+#define SCREEN_HEIGHT 256
 
 int height_array[SCREEN_WIDTH][SCREEN_HEIGHT];
 

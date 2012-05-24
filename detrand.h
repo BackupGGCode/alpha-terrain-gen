@@ -1,6 +1,8 @@
 /*
  * detrand.h
  *
+ * Determinstic Random Number Generator
+ *
  *  Created on: May 24, 2012
  *      Author: Simon
  */

@@ -1,6 +1,8 @@
 /*
  * detrand.cpp
  *
+ * Deterministic Random Number Generator
+ *
  *  Created on: May 24, 2012
  *      Author: Simon Davies
  */
@@ -12,6 +14,7 @@
 
 #define START_SEED 4317903
 
+/** Gets a random float, using a single value x as its seed */
 float getRandFloat(int x){
 	if(x == 0){
 		x = 3241;
@@ -20,6 +23,7 @@ float getRandFloat(int x){
 	return (float)rand() / RAND_MAX;
 }
 
+/** Gets a random float, using a two values, x and y, as its seed */
 float getRandFloat(int x, int y){
 	if(x == 0){
 		x = 3241;
