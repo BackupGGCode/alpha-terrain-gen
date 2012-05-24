@@ -9,7 +9,12 @@
 #include "SDL.h"
 #include <stdio.h>
 
-#include "detrand.h"
+#include "heightgen.h"
+
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
+
+int height_array[SCREEN_WIDTH][SCREEN_HEIGHT];
 
 void put_pixel(SDL_Surface *surface, int x, int y, Uint8 r, Uint8 g, Uint8 b);
 int draw_screen(SDL_Surface* screen);
@@ -23,6 +28,13 @@ int main(int argc, char *argv[]) {
 
 	/* Initialise SDL video */
 	screen = init_video();
+
+	/* generate heightmap */
+	for(int x = 0; x < screen->w; x++){
+		for(int y = 0; y < screen->h; y++){
+			height_array[x][y] = (int)(brownianValue(x,y + SCREEN_HEIGHT * SCREEN_WIDTH,3) * 255);
+		}
+	}
 
 	while (!quit) {
 		// Draw scene
@@ -64,7 +76,7 @@ SDL_Surface* init_video(){
 		return NULL;
 	}
 
-	surface = SDL_SetVideoMode(800, 600, 24, SDL_HWSURFACE);
+	surface = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 24, SDL_HWSURFACE);
 	if (surface == NULL) {
 		fprintf(stderr, "Couldn't set 800x600x24 video mode: %s\n",
 				SDL_GetError());
@@ -89,7 +101,7 @@ int draw_screen(SDL_Surface* screen){
 	// Plot the Pixel
 	for(int x = 0; x < screen->w; x++){
 		for(int y = 0; y < screen->h; y++){
-			int colour = (int)(getFloat(x,y) * 255);
+			int colour = height_array[x][y];
 			put_pixel(screen, x, y, colour, colour, colour);
 		}
 	}
