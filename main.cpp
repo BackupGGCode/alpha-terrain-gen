@@ -10,47 +10,18 @@
 
 // SDL includes
 #include "SDL.h"
-#include "SDL_ttf.h"
 
 // Terrain gen
 #include "heightgen.h"
 #include "TerrainSegment.h"
 
+// TODO: remove me
+#include "detrand.h"
+
 static GLint T0 = 0;
 static GLint Frames = 0;
 
-#define TERRAIN_MULTIPLIER 10
-
 TerrainSegment* terrainSegment;
-
-/** Must be used as part of a GL_QUAD_STRIP */
-static void terrain_quad(float x, float z, float size){
-	glVertex3f(x, 		 brownianValue(x,z,3) 				 * TERRAIN_MULTIPLIER, z);
-	glVertex3f(x,		 brownianValue(x,z + size,3) 		 * TERRAIN_MULTIPLIER, z + size);
-	glVertex3f(x + size, brownianValue(x + size,z,3)  		 * TERRAIN_MULTIPLIER, z);
-	glVertex3f(x + size, brownianValue(x + size,z + size,3)  * TERRAIN_MULTIPLIER, z + size);
-
-}
-
-#define TERRAIN_QUAD_WIDTH 20
-#define TERRAIN_QUAD_SIZE 1.0
-
-static void terrain(void){
-	glShadeModel(GL_FLAT);
-
-	glNormal3f(0.0, 0.0, 1.0);
-
-	for(int x = -TERRAIN_QUAD_WIDTH/2; x < TERRAIN_QUAD_WIDTH/2; x++){
-		glBegin(GL_QUAD_STRIP);
-		for(int z = -TERRAIN_QUAD_WIDTH/2; z < TERRAIN_QUAD_WIDTH/2; z++){
-			terrain_quad(x,z,TERRAIN_QUAD_SIZE);
-		}
-		glEnd();
-	}
-
-}
-
-
 
 GLint terrain_obj;
 
@@ -109,7 +80,7 @@ static void init(int argc, char *argv[]) {
 	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
 
 	//TODO:
-	terrainSegment = new TerrainSegment(-10,-10, 160, 160, 0.125);
+	terrainSegment = new TerrainSegment(-40,-40, 160, 160, 0.5);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glEnable(GL_CULL_FACE);
@@ -176,6 +147,11 @@ int main(int argc, char *argv[]) {
 		exit(2);
 	}
 	SDL_WM_SetCaption("Alpha", "alpha");
+
+	//TODO: REmove me test / debug
+	printf("x: 1 , y : 1, %f\n", getRandFloat(1,1));
+	printf("x: -1 , y : -1, %f\n", getRandFloat(-1,-1));
+	printf("x: -1 , y : 1, %f\n", getRandFloat(-1,1));
 
 	init(argc, argv);
 	reshape(screen->w, screen->h);

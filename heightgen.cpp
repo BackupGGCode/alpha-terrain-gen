@@ -29,7 +29,7 @@ static float getSmoothValue(int x, int y){
 	return cornersValue + sides + value;
 }
 
-/** Does a cosine interpolation between two values */
+/** Performs a cosine interpolation between two values */
 static double interpolate(double a, double b, double x){
 	double ft = x * PI;
 	double f = (1 - cos(ft)) * 0.5;
@@ -37,12 +37,13 @@ static double interpolate(double a, double b, double x){
 	return a * (1 - f) + b * f;
 }
 
-
 static float interpolatedNoiseValue(float x, float y){
-	int integer_X = (int)x;
+	// TODO: Currently just getting the absolute value
+	// Makes it symmetrical, but fixes the bug I was having
+	int integer_X = (int)floor(x);
 	float fraction_X = x - integer_X;
 
-	int integer_Y = (int)y;
+	int integer_Y = (int)floor(y);
 	float fraction_Y = y - integer_Y;
 
 	float v1 = getSmoothValue(integer_X, integer_Y);
