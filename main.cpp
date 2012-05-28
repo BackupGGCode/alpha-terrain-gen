@@ -109,7 +109,7 @@ static void init(int argc, char *argv[]) {
 	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
 
 	//TODO:
-	terrainSegment = new TerrainSegment(-10,-10, 40, 40, 0.5);
+	terrainSegment = new TerrainSegment(-10,-10, 160, 160, 0.125);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glEnable(GL_CULL_FACE);

@@ -1,8 +1,10 @@
 /*
  * Quad.cpp
  *
+ * Class for a terrain quad.
+ *
  *  Created on: May 28, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #include "Quad.h"
@@ -26,6 +28,9 @@ Quad::~Quad() {
 	free(surface_normal);
 }
 
+/** Initializes the quad for rendering by OpenGL
+ * Should be used as part of the GL_QUADS initialization loop */
+
 void Quad::init(){
 
 	glNormal3f(surface_normal[0], surface_normal[1], surface_normal[2]);
@@ -36,7 +41,7 @@ void Quad::init(){
 	glVertex3f(vertex_data[3][0], vertex_data[3][1], vertex_data[3][2]);
 }
 
-// TODO: Stub
+/** Calculates the surface normal of a quad */
 void Quad::calculate_surface_normals(){
 	float u[] = {
 			vertex_data[1][0] - vertex_data[0][0],

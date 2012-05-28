@@ -1,8 +1,10 @@
 /*
  * Quad.h
  *
+ * Class for a terrain quad.
+ *
  *  Created on: May 28, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #ifndef QUAD_H_

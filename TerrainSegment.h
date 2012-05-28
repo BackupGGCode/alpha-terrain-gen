@@ -1,8 +1,13 @@
 /*
  * TerrainSegment.h
  *
+ * Class for a section of terrain.
+ * Can be specified to an abritrary number of quads, with an arbitrary quad size.
+ *
+ * Generates the terrain based on the height map generation algorithm.
+ *
  *  Created on: May 28, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #ifndef TERRAINSEGMENT_H_
@@ -14,7 +19,7 @@
 
 class TerrainSegment {
 private:
-	std::vector <std::vector<Quad*> > quad_strip;
+	std::vector <std::vector<Quad*> > quad_arrays;
 
 public:
 	TerrainSegment(float x, float z, int width_quads, int height_quads, float quad_size);
