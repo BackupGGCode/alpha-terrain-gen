@@ -14,11 +14,14 @@
 
 // Terrain gen
 #include "heightgen.h"
+#include "TerrainSegment.h"
 
 static GLint T0 = 0;
 static GLint Frames = 0;
 
 #define TERRAIN_MULTIPLIER 10
+
+TerrainSegment* terrainSegment;
 
 /** Must be used as part of a GL_QUAD_STRIP */
 static void terrain_quad(float x, float z, float size){
@@ -105,6 +108,9 @@ static void init(int argc, char *argv[]) {
 	static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
 	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
 
+	//TODO:
+	terrainSegment = new TerrainSegment(-10,-10, 40, 40, 0.5);
+
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_LIGHTING);
@@ -114,7 +120,7 @@ static void init(int argc, char *argv[]) {
 	terrain_obj = glGenLists(1);
 	glNewList(terrain_obj, GL_COMPILE);
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-	terrain();
+	terrainSegment->init_quads();
 	glEndList();
 
 	glEnable(GL_NORMALIZE);
