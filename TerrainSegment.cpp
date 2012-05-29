@@ -23,15 +23,6 @@ TerrainSegment::TerrainSegment(float x, float z, int width_quads, int height_qua
 			quad_arrays[i][j] = calculateNewQuad(x + (quad_size * i), z + (quad_size * j), quad_size);
 		}
 	}
-	printf("CREATED\n");
-	printf("Value 1.0, 1.0, 3 : %f\n", brownianValue(1.0,1.0,3));
-	printf("Value 0.1, 0.1, 3 : %f\n", brownianValue(0.1,0.1,3));
-	printf("Value 0.1, 0.1, 3 : %f\n", brownianValue(0.1,0.1,3));
-	printf("Value 0.0, 0.0, 3 : %f\n", brownianValue(0.0,0.0,3));
-	printf("Value -0.1, 0.0, 3 : %f\n", brownianValue(-0.1,0.0,3));
-	printf("Value -1, 0.0, 3 : %f\n", brownianValue(-1.0,0.0,3));
-	printf("Value 0, -1.0, 3 : %f\n", brownianValue(0.0,-1.0,3));
-	printf("Value -1.0, -1.0, 3 : %f\n", brownianValue(-1.0,-1.0,3));
 }
 
 TerrainSegment::~TerrainSegment() {
@@ -41,8 +32,6 @@ TerrainSegment::~TerrainSegment() {
 		}
 	}
 	quad_arrays.clear();
-	// TODO Auto-generated destructor stub
-	printf("DELETED\n");
 }
 
 /** Initializes all of the quads for rendering by OpenGL */

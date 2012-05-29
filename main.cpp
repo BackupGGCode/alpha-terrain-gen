@@ -15,26 +15,33 @@
 #include "heightgen.h"
 #include "TerrainSegment.h"
 
-// TODO: remove me
-#include "detrand.h"
+// Keyboard input struct
+#include "Inputs.h"
+
+// Camera
+#include "ControllableCamera.h"
 
 static GLint T0 = 0;
 static GLint Frames = 0;
 
 TerrainSegment* terrainSegment;
+ControllableCamera* camera;
 
 GLint terrain_obj;
-
-static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 
 static void draw(void) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	glRotatef(view_rotx, 1.0, 0.0, 0.0);
-	glRotatef(view_roty, 0.0, 1.0, 0.0);
-	glRotatef(view_rotz, 0.0, 0.0, 1.0);
+
+	glRotatef(camera->getPositions()->cam_x_rot, 1.0, 0.0, 0.0);
+	glRotatef(camera->getPositions()->cam_y_rot, 0.0, 1.0, 0.0);
+	glRotatef(camera->getPositions()->cam_z_rot, 0.0, 0.0, 1.0);
+	glTranslatef(	-camera->getPositions()->cam_x_pos,
+					-camera->getPositions()->cam_y_pos,
+					-camera->getPositions()->cam_z_pos);
+
 	// Draw stuff
 	glPushMatrix();
 	glEnable(GL_CULL_FACE);
@@ -42,7 +49,6 @@ static void draw(void) {
 	glCallList(terrain_obj);
 
 	glPopMatrix();
-
 
 	glPopMatrix();
 
@@ -66,7 +72,7 @@ static void reshape(int width, int height) {
 	glViewport(0, 0, (GLint) width, (GLint) height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
+	glFrustum(-1.0, 1.0, -h, h, 5.0, 2000.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glTranslatef(0.0, 0.0, -40.0);
@@ -80,7 +86,7 @@ static void init(int argc, char *argv[]) {
 	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
 
 	//TODO:
-	terrainSegment = new TerrainSegment(-40,-40, 160, 160, 0.5);
+	terrainSegment = new TerrainSegment(-40, -40, 160, 160, 0.5);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glEnable(GL_CULL_FACE);
@@ -104,6 +110,47 @@ static void init(int argc, char *argv[]) {
 	}
 }
 
+void check_for_movement_inputs(SDL_Event event, Inputs* input) {
+	switch (event.type) {
+	case SDL_KEYDOWN:
+		switch(event.key.keysym.sym){
+		case SDLK_w:
+			input->forward = true;
+			break;
+		case SDLK_s:
+			input->backward = true;
+			break;
+		case SDLK_a:
+			input->strafe_left = true;
+			break;
+		case SDLK_d:
+			input->strafe_right = true;
+			break;
+		default:
+			break;
+		}
+		break;
+	case SDL_KEYUP:
+		switch(event.key.keysym.sym){
+		case SDLK_w:
+			input->forward = false;
+			break;
+		case SDLK_s:
+			input->backward = false;
+			break;
+		case SDLK_a:
+			input->strafe_left = false;
+			break;
+		case SDLK_d:
+			input->strafe_right = false;
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+}
+
 int main(int argc, char *argv[]) {
 	SDL_Surface *screen;
 	int done;
@@ -120,7 +167,12 @@ int main(int argc, char *argv[]) {
 	// One second in milliseconds / desired FPS
 	float timePerFrame = 1000 / desiredFPS;
 
-	Uint8 *keys;
+	// Setup input struct
+	Inputs* input = new Inputs();
+	input->backward = false;
+	input->forward = false;
+	input->strafe_left = false;
+	input->strafe_right = false;
 
 	SDL_Init(SDL_INIT_VIDEO);
 
@@ -148,24 +200,30 @@ int main(int argc, char *argv[]) {
 	}
 	SDL_WM_SetCaption("Alpha", "alpha");
 
-	//TODO: REmove me test / debug
-	printf("x: 1 , y : 1, %f\n", getRandFloat(1,1));
-	printf("x: -1 , y : -1, %f\n", getRandFloat(-1,-1));
-	printf("x: -1 , y : 1, %f\n", getRandFloat(-1,1));
-
 	init(argc, argv);
 	reshape(screen->w, screen->h);
+	camera = new ControllableCamera(screen->w, screen->h, 0.25f);
 	done = 0;
+
+	// Hide cursor for mouse movement
+	SDL_ShowCursor(false);
+
+	// Keep mouse within confines of the window
+	SDL_WM_GrabInput(SDL_GRAB_ON);
+
 	while (!done) {
 		SDL_Event event;
 
 		while (SDL_PollEvent(&event)) {
+			check_for_movement_inputs(event, input);
 			switch (event.type) {
 			case SDL_VIDEORESIZE:
 				screen = SDL_SetVideoMode(event.resize.w, event.resize.h, 16,
 						SDL_OPENGL | SDL_RESIZABLE);
 				if (screen) {
 					reshape(screen->w, screen->h);
+					// Camera needs to be informed of new screen size
+					camera->screen_resize(screen->w, screen->h);
 				} else {
 					/* Uh oh, we couldn't set the new video mode?? */;
 				}
@@ -176,48 +234,42 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case SDL_KEYDOWN:
-				keys = SDL_GetKeyState(NULL);
-				if (keys[SDLK_ESCAPE]) {
+				switch(event.key.keysym.sym){
+				case SDLK_ESCAPE:
 					done = 1;
-				}
-				if (keys[SDLK_UP]) {
-					view_rotx += 5.0;
-				}
-				if (keys[SDLK_DOWN]) {
-					view_rotx -= 5.0;
-				}
-				if (keys[SDLK_LEFT]) {
-					view_roty += 5.0;
-				}
-				if (keys[SDLK_RIGHT]) {
-					view_roty -= 5.0;
-				}
-				if (keys[SDLK_z]) {
-					if (SDL_GetModState() & KMOD_SHIFT) {
-						view_rotz -= 5.0;
-					} else {
-						view_rotz += 5.0;
-					}
-				}
-				if (keys[SDLK_w]) {
+					break;
+				case SDLK_z:
 					if (wireframe) {
 						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 					} else {
 						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 					}
 					wireframe = !wireframe;
+					break;
+				default:
+					break;
 				}
 				break;
+			case SDL_MOUSEMOTION:
+				camera->camera_rotation_mouse(event.motion.x,
+												event.motion.y);
+				break;
+
 			}
 		}
 
 		// Check redraw rate
 		if (SDL_GetTicks() > lastDrawTime + timePerFrame) {
 			draw();
+			camera->camera_translation_keyboard(input);
+			camera->move_camera();
 			SDL_GL_SwapBuffers();
 			lastDrawTime = SDL_GetTicks();
+		} else {
+			Sleep(0);
 		}
 	}
+	delete(input);
 	SDL_Quit();
 	return 0; /* ANSI C requires main to return int. */
 }
