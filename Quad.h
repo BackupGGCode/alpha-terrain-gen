@@ -11,16 +11,16 @@
 #define QUAD_H_
 
 #include <GL/gl.h>
-#include "Vector3d.h"
+#include "Vector3D.h"
 
 class Quad {
 public:
 	Quad();
-	Quad(Vector3d* vertex1, Vector3d* vertex2, Vector3d* vertex3, Vector3d* vertex4);
+	Quad(Vector3D* vertex1, Vector3D* vertex2, Vector3D* vertex3, Vector3D* vertex4);
 	virtual ~Quad();
 	void init();
 
-	Vector3d* get_surface_normal();
+	Vector3D* get_surface_normal();
 
 	void calculate_vertex_normals(
 			Quad* NWQuad,		Quad* NQuad,		Quad* NEQuad,
@@ -29,10 +29,12 @@ public:
 	);
 
 private:
-	Vector3d* vertex_data[4];
-	Vector3d* vertex_normals[4];
-	Vector3d* surface_normal;
+	bool using_vertex_normals;
+	Vector3D* vertex_data[4];
+	Vector3D* vertex_normals[4];
+	Vector3D* surface_normal;
 	void calculate_surface_normals();
+	Vector3D* calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direct2);
 };
 
 #endif /* QUAD_H_ */

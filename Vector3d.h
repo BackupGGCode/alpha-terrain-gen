@@ -12,17 +12,19 @@
 
 #include <GL/gl.h>
 
-class Vector3d {
+class Vector3D {
 public:
-	Vector3d(GLfloat x, GLfloat y, GLfloat z);
-	virtual ~Vector3d();
+	Vector3D(GLfloat x, GLfloat y, GLfloat z);
+	virtual ~Vector3D();
 
 	GLfloat x;
 	GLfloat y;
 	GLfloat z;
 
-	Vector3d operator + (Vector3d);
-	Vector3d operator - (Vector3d);
+	Vector3D operator + (Vector3D);
+	Vector3D operator - (Vector3D);
+	Vector3D operator / (float);
+	Vector3D operator * (float);
 };
 
 #endif /* VECTOR3D_H_ */
