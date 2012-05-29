@@ -29,6 +29,8 @@ ControllableCamera* camera;
 
 GLint terrain_obj;
 
+// TODO: Rewrite this entire file to be OOP
+
 static void draw(void) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -88,6 +90,9 @@ static void init(int argc, char *argv[]) {
 	//TODO:
 	terrainSegment = new TerrainSegment(-40, -40, 160, 160, 0.5);
 
+	// TODO: Change me back
+
+	// TODO: Better lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_LIGHTING);

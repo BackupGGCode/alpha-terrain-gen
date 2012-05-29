@@ -15,46 +15,50 @@ Quad::Quad(){
 
 }
 
-Quad::Quad(GLfloat vertex1[], GLfloat vertex2[], GLfloat vertex3[], GLfloat vertex4[]) {
-	memcpy(vertex_data[0], vertex1, sizeof(GLfloat) * 3);
-	memcpy(vertex_data[1], vertex2, sizeof(GLfloat) * 3);
-	memcpy(vertex_data[2], vertex3, sizeof(GLfloat) * 3);
-	memcpy(vertex_data[3], vertex4, sizeof(GLfloat) * 3);
+Quad::Quad(Vector3d* vertex1, Vector3d* vertex2, Vector3d* vertex3, Vector3d* vertex4) {
+	vertex_data[0] = vertex1;
+	vertex_data[1] = vertex2;
+	vertex_data[2] = vertex3;
+	vertex_data[3] = vertex4;
 	calculate_surface_normals();
 }
 
 Quad::~Quad() {
 	free(vertex_data);
-	free(surface_normal);
 }
+
+void Quad::calculate_vertex_normals(
+		Quad* NWQuad,		Quad* NQuad,		Quad* NEQuad,
+		Quad* WQuad,		/* this Quad */		Quad* EQuad,
+		Quad* SWQuad,		Quad* SQuad,		Quad* SEQuad
+){
+	// NorthWest vertex
+
+}
+
 
 /** Initializes the quad for rendering by OpenGL
  * Should be used as part of the GL_QUADS initialization loop */
 
 void Quad::init(){
 
-	glNormal3f(surface_normal[0], surface_normal[1], surface_normal[2]);
+	// TODO: Use vertex normals
+	glNormal3f(surface_normal->x,surface_normal->y, surface_normal->z);
 
-	glVertex3f(vertex_data[0][0], vertex_data[0][1], vertex_data[0][2]);
-	glVertex3f(vertex_data[1][0], vertex_data[1][1], vertex_data[1][2]);
-	glVertex3f(vertex_data[2][0], vertex_data[2][1], vertex_data[2][2]);
-	glVertex3f(vertex_data[3][0], vertex_data[3][1], vertex_data[3][2]);
+	glVertex3f(vertex_data[0]->x, vertex_data[0]->y, vertex_data[0]->z);
+	glVertex3f(vertex_data[1]->x, vertex_data[1]->y, vertex_data[1]->z);
+	glVertex3f(vertex_data[2]->x, vertex_data[2]->y, vertex_data[2]->z);
+	glVertex3f(vertex_data[3]->x, vertex_data[3]->y, vertex_data[3]->z);
 }
 
 /** Calculates the surface normal of a quad */
 void Quad::calculate_surface_normals(){
-	float u[] = {
-			vertex_data[1][0] - vertex_data[0][0],
-			vertex_data[1][1] - vertex_data[0][1],
-			vertex_data[1][2] - vertex_data[0][2],
-	};
-	float v[] = {
-			vertex_data[2][0] - vertex_data[0][0],
-			vertex_data[2][1] - vertex_data[0][1],
-			vertex_data[2][2] - vertex_data[0][2],
-	};
+	Vector3d u = *vertex_data[1] - *vertex_data[0];
+	Vector3d v = *vertex_data[2] - *vertex_data[0];
 
-	surface_normal[0] = (u[1] * v[2])- (u[2] * v[1]);
-	surface_normal[1] = (u[2] * v[0])- (u[0] * v[2]);
-	surface_normal[2] = (u[0] * v[1])- (u[1] * v[0]);
+	GLfloat x = (u.y * v.z)- (u.z * v.y);
+	GLfloat y = (u.z * v.x)- (u.x * v.z);
+	GLfloat z = (u.x * v.y)- (u.y * v.x);
+
+	surface_normal = new Vector3d(x,y,z);
 }
