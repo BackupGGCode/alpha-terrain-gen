@@ -74,10 +74,9 @@ static void reshape(int width, int height) {
 	glViewport(0, 0, (GLint) width, (GLint) height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-1.0, 1.0, -h, h, 5.0, 2000.0);
+	glFrustum(-1.0, 1.0, -h, h, 5.0, 500.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glTranslatef(0.0, 0.0, -40.0);
 }
 
 static void init(int argc, char *argv[]) {
