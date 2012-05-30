@@ -41,27 +41,29 @@ AlphaMain::AlphaMain() {
 	/* Open GL Setup begins here */
 
 	// Lighting
-	static GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
-	static GLfloat red[4] = { 0.8, 0.1, 0.0, 1.0 };
-	static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
-	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
+	GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
+	GLfloat ambient[]  = {0.1f, 0.1f, 0.1f, 1.0f};
+	GLfloat diffuse[]  = {0.7f, 0.7f, 0.7f, 1.0f};
+	GLfloat specular[]  = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	// TODO: More terrain segments
 	terrainSegment = new TerrainSegment(-40, -40, 160, 160, 0.5);
 
-	printf("GL_MAX_LIGHTS %i\n", GL_MAX_LIGHTS);
-
 	// TODO: Better lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 
-	// TODO: Mess around tidy this up
-	// TODO: Taken straight from http://nehe.gamedev.net/tutorial/cool_looking_fog/19001/
-	glClearColor(0.4f,0.7f,1.0f,1.0f);          // We'll Clear To The Color Of The Fog ( Modified )
+	// Fog
+	// Sky colour
 	GLfloat fogColor[4]= {0.4f,0.7f,1.0f, 1.0f};      // Fog Color
+	glClearColor(fogColor[0],fogColor[1],fogColor[2],fogColor[3]);          // We'll Clear To The Color Of The Fog ( Modified )
 
 	glFogi(GL_FOG_MODE, GL_LINEAR);        // Fog Mode
 	glFogfv(GL_FOG_COLOR, fogColor);            // Set Fog Color
@@ -73,8 +75,20 @@ AlphaMain::AlphaMain() {
 	/* End fog */
 
 	terrain_obj = glGenLists(1);
+
+	// TODO: Random Colour terrain generation, should probably a bit less random at some point
+	GLfloat materialColour[4];
+	materialColour[0] = (float)rand() / RAND_MAX;
+	materialColour[1] = (float)rand() / RAND_MAX;
+	materialColour[2] = (float)rand() / RAND_MAX;
+	materialColour[3] = 1.0f;
+
 	glNewList(terrain_obj, GL_COMPILE);
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
+
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColour);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+	glMaterialf(GL_FRONT, GL_SHININESS, 8);
+
 	terrainSegment->init_quads();
 	glEndList();
 
