@@ -63,9 +63,6 @@ Vector3D* Quad::calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direc
  * Should be used as part of the GL_QUADS initialization loop */
 void Quad::init(){
 
-	// TODO: Currently not drawing edge surfaces, when not been able to calculate surface normals
-	if(using_vertex_normals){
-
 	// using vertex normals
 	glNormal3f(vertex_normals[0]->x,vertex_normals[0]->y, vertex_normals[0]->z);
 	glVertex3f(vertex_data[0]->x, vertex_data[0]->y, vertex_data[0]->z);
@@ -79,7 +76,6 @@ void Quad::init(){
 	glNormal3f(vertex_normals[3]->x,vertex_normals[3]->y, vertex_normals[3]->z);
 	glVertex3f(vertex_data[3]->x, vertex_data[3]->y, vertex_data[3]->z);
 
-	}
 }
 
 /** Calculates the surface normal of a quad */

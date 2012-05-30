@@ -16,17 +16,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 2
+
 TerrainSegment::TerrainSegment(float x, float z, int width_quads, int height_quads, float quad_size) {
 	// Creates the two dimensiona array full of quads
-	quad_arrays.resize(width_quads);
+	// The array size is increased so that the extra quads are used for
+	// calculating vertex normals on the edge quads.
+
+	// These extra quads are not drawn.
+	quad_arrays.resize(width_quads + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
 	for(unsigned int i = 0; i < quad_arrays.size(); i++){
-		quad_arrays[i].resize(height_quads);
+		quad_arrays[i].resize(height_quads + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
 		for(unsigned int j = 0; j < quad_arrays[i].size(); j++){
 			quad_arrays[i][j] = calculateNewQuad(x + (quad_size * i), z + (quad_size * j), quad_size);
 		}
 	}
-	// TODO: Calculate vertex normals for each vertex
-	// TODO: Calculate the edges
+
+	// Calculate vertex normals for each vertex
 	for(unsigned int i = 1; i < quad_arrays.size() - 1; i++){
 		for(unsigned int j = 1; j < quad_arrays[i].size() -1; j++){
 			quad_arrays[i][j]->calculate_vertex_normals(
@@ -51,10 +57,8 @@ TerrainSegment::~TerrainSegment() {
 void TerrainSegment::init_quads(){
 	glShadeModel(GL_SMOOTH);
 	glBegin(GL_QUADS);
-	for(unsigned int i = 0; i < quad_arrays.size(); i++){
-		for(unsigned int j = 0; j < quad_arrays[i].size(); j++){
-			// TODO: Test colours
-//			glColor3f((float)i / quad_arrays.size(),(float)j / quad_arrays.size(),0.5);
+	for(unsigned int i = 1; i < quad_arrays.size() - 1; i++){
+		for(unsigned int j = 1; j < quad_arrays[i].size() - 1; j++){
 			quad_arrays[i][j]->init();
 		}
 	}

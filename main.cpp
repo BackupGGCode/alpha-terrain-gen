@@ -40,9 +40,9 @@ static void draw(void) {
 	glRotatef(camera->getPositions()->cam_x_rot, 1.0, 0.0, 0.0);
 	glRotatef(camera->getPositions()->cam_y_rot, 0.0, 1.0, 0.0);
 	glRotatef(camera->getPositions()->cam_z_rot, 0.0, 0.0, 1.0);
-	glTranslatef(	-camera->getPositions()->cam_x_pos,
-					-camera->getPositions()->cam_y_pos,
-					-camera->getPositions()->cam_z_pos);
+	glTranslatef(-camera->getPositions()->cam_x_pos,
+			-camera->getPositions()->cam_y_pos,
+			-camera->getPositions()->cam_z_pos);
 
 	// Draw stuff
 	glPushMatrix();
@@ -118,7 +118,7 @@ static void init(int argc, char *argv[]) {
 void check_for_movement_inputs(SDL_Event event, Inputs* input) {
 	switch (event.type) {
 	case SDL_KEYDOWN:
-		switch(event.key.keysym.sym){
+		switch (event.key.keysym.sym) {
 		case SDLK_w:
 			input->forward = true;
 			break;
@@ -136,7 +136,7 @@ void check_for_movement_inputs(SDL_Event event, Inputs* input) {
 		}
 		break;
 	case SDL_KEYUP:
-		switch(event.key.keysym.sym){
+		switch (event.key.keysym.sym) {
 		case SDLK_w:
 			input->forward = false;
 			break;
@@ -162,6 +162,9 @@ int main(int argc, char *argv[]) {
 
 	// Wireframe mode toggle variable
 	int wireframe = 0;
+
+	// Is the window currently active?
+	bool window_active = true;
 
 	// When was the last time the scene was drawn?
 	double lastDrawTime = 0;
@@ -222,6 +225,7 @@ int main(int argc, char *argv[]) {
 		while (SDL_PollEvent(&event)) {
 			check_for_movement_inputs(event, input);
 			switch (event.type) {
+			// Screen resized
 			case SDL_VIDEORESIZE:
 				screen = SDL_SetVideoMode(event.resize.w, event.resize.h, 16,
 						SDL_OPENGL | SDL_RESIZABLE);
@@ -238,8 +242,26 @@ int main(int argc, char *argv[]) {
 				done = 1;
 				break;
 
+			case SDL_ACTIVEEVENT:
+				if (event.active.state & SDL_APPINPUTFOCUS) {
+					//If the application is no longer active
+					if (event.active.gain == 0) {
+						window_active = false;
+						// Turn on cursor and let it escape the screen space
+						SDL_ShowCursor(true);
+						SDL_WM_GrabInput(SDL_GRAB_OFF);
+					} else {
+						window_active = true;
+						// Hide cursor for mouse movement
+						SDL_ShowCursor(false);
+						// Keep mouse within confines of the window
+						SDL_WM_GrabInput(SDL_GRAB_ON);
+					}
+				}
+				break;
+
 			case SDL_KEYDOWN:
-				switch(event.key.keysym.sym){
+				switch (event.key.keysym.sym) {
 				case SDLK_ESCAPE:
 					done = 1;
 					break;
@@ -256,8 +278,9 @@ int main(int argc, char *argv[]) {
 				}
 				break;
 			case SDL_MOUSEMOTION:
-				camera->camera_rotation_mouse(event.motion.x,
-												event.motion.y);
+				if(window_active){
+					camera->camera_rotation_mouse(event.motion.x, event.motion.y);
+				}
 				break;
 
 			}
@@ -266,15 +289,18 @@ int main(int argc, char *argv[]) {
 		// Check redraw rate
 		if (SDL_GetTicks() > lastDrawTime + timePerFrame) {
 			draw();
-			camera->camera_translation_keyboard(input);
-			camera->move_camera();
+			// Don't do camera stuff unless the screen is active
+			if(window_active){
+				camera->camera_translation_keyboard(input);
+				camera->move_camera();
+			}
 			SDL_GL_SwapBuffers();
 			lastDrawTime = SDL_GetTicks();
 		} else {
 			Sleep(0);
 		}
 	}
-	delete(input);
+	delete (input);
 	SDL_Quit();
 	return 0; /* ANSI C requires main to return int. */
 }
