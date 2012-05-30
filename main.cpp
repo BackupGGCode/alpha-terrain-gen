@@ -1,3 +1,15 @@
+/**
+ * Main Function for Alpha
+ *
+ * Terrain Generation Open GL Program
+ * Generates a 3D Terrain-Based world using a procedural algorithm based on
+ * the Fractional Brownian Motion algorithm.
+ *
+ * Uses SDL and OpenGL.
+ *
+ * Author: Simon Davies
+ */
+
 #include "AlphaMain.h"
 
 #include "SDL.h"

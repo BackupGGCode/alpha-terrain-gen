@@ -2,7 +2,7 @@
  * AlphaMain.cpp
  *
  *  Created on: May 30, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #include "AlphaMain.h"
@@ -46,10 +46,10 @@ AlphaMain::AlphaMain() {
 	static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };
 	static GLfloat blue[4] = { 0.2, 0.2, 1.0, 1.0 };
 
-	//TODO:
+	// TODO: More terrain segments
 	terrainSegment = new TerrainSegment(-40, -40, 160, 160, 0.5);
 
-	// TODO: Change me back
+	printf("GL_MAX_LIGHTS %i\n", GL_MAX_LIGHTS);
 
 	// TODO: Better lighting
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
@@ -57,6 +57,20 @@ AlphaMain::AlphaMain() {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
+
+	// TODO: Mess around tidy this up
+	// TODO: Taken straight from http://nehe.gamedev.net/tutorial/cool_looking_fog/19001/
+	glClearColor(0.4f,0.7f,1.0f,1.0f);          // We'll Clear To The Color Of The Fog ( Modified )
+	GLfloat fogColor[4]= {0.4f,0.7f,1.0f, 1.0f};      // Fog Color
+
+	glFogi(GL_FOG_MODE, GL_LINEAR);        // Fog Mode
+	glFogfv(GL_FOG_COLOR, fogColor);            // Set Fog Color
+	glFogf(GL_FOG_DENSITY, 0.003f);              // How Dense Will The Fog Be
+	glHint(GL_FOG_HINT, GL_DONT_CARE);          // Fog Hint Value
+	glFogf(GL_FOG_START, 30.0f);             // Fog Start Depth
+	glFogf(GL_FOG_END, 400.0f);               // Fog End Depth
+	glEnable(GL_FOG);                   // Enables GL_FOG
+	/* End fog */
 
 	terrain_obj = glGenLists(1);
 	glNewList(terrain_obj, GL_COMPILE);
@@ -126,7 +140,7 @@ void AlphaMain::reshape(int width, int height) {
 	glViewport(0, 0, (GLint) width, (GLint) height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-1.0, 1.0, -h, h, 5.0, 500.0);
+	glFrustum(-1.0, 1.0, -h, h, 5.0, 400.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -151,7 +165,6 @@ void AlphaMain::draw() {
 
 	// Draw world objects
 	glPushMatrix();
-	glEnable(GL_CULL_FACE);
 
 	// Draw Terrain
 	glCallList(terrain_obj);
@@ -174,6 +187,9 @@ void AlphaMain::draw() {
 	}
 }
 
+/** Handles SDL_events, such as when the screen is resized,
+ * mouse movements and keyboard inputs.
+ */
 void AlphaMain::handle_event(SDL_Event event)
 {
     check_for_movement_inputs(event);
@@ -218,7 +234,7 @@ void AlphaMain::handle_event(SDL_Event event)
 					case SDLK_ESCAPE:
 						quit_flag = 1;
 						break;
-					case SDLK_f:
+					case SDLK_c:
 						// Test function - prints out camera position
 						printf("Camera Position : \n"
 								"cam_x_pos: %f\n"
@@ -235,13 +251,24 @@ void AlphaMain::handle_event(SDL_Event event)
 						camera->getPositions()->cam_z_rot
 						);
 						break;
+					case SDLK_f:
+						if(!fog_enabled){
+							glEnable(GL_FOG);
+							fog_enabled = true;
+						}
+						else{
+							glDisable(GL_FOG);
+							fog_enabled = false;
+						}
+						break;
 					case SDLK_z:
 						if (wireframe) {
 							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+							wireframe = false;
 						} else {
 							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+							wireframe = true;
 						}
-						wireframe = !wireframe;
 						break;
 					default:
 						break;

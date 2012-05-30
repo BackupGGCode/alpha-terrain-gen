@@ -2,7 +2,7 @@
  * AlphaMain.h
  *
  *  Created on: May 30, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #ifndef ALPHAMAIN_H_
@@ -37,6 +37,8 @@ private:
 
 	// Is the window currently OS active?
 	bool window_active;
+
+	bool fog_enabled;
 
 	bool quit_flag;
 

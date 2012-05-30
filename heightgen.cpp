@@ -37,9 +37,8 @@ static double interpolate(double a, double b, double x){
 	return a * (1 - f) + b * f;
 }
 
+/** Gets the interpolated / smoothed noise value based on an x and y coordinates */
 static float interpolatedNoiseValue(float x, float y){
-	// TODO: Currently just getting the absolute value
-	// Makes it symmetrical, but fixes the bug I was having
 	int integer_X = (int)floor(x);
 	float fraction_X = x - integer_X;
 
