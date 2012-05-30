@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "detrand.h"
+#include "DetRand.h"
 
 #define START_SEED 4317903
 

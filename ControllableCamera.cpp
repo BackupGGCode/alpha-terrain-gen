@@ -33,10 +33,10 @@ ControllableCamera::ControllableCamera(int window_width, int window_height,
 
 	cam = new Positions();
 	cam->cam_x_pos = 0;
-	cam->cam_x_rot = 45;
-	cam->cam_y_pos = 5;
+	cam->cam_x_rot = 0;
+	cam->cam_y_pos = 7.5;
 	cam->cam_y_rot = 0;
-	cam->cam_z_pos = 0;
+	cam->cam_z_pos = 50;
 	cam->cam_z_rot = 0;
 }
 

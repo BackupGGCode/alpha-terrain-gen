@@ -32,10 +32,13 @@ Quad::~Quad() {
 	delete(vertex_data[2]);
 	delete(vertex_data[3]);
 
-	delete(vertex_normals[0]);
-	delete(vertex_normals[1]);
-	delete(vertex_normals[2]);
-	delete(vertex_normals[3]);
+	// Only delete vertex_normals if they have actually been calculated...
+	if(using_vertex_normals){
+		delete(vertex_normals[0]);
+		delete(vertex_normals[1]);
+		delete(vertex_normals[2]);
+		delete(vertex_normals[3]);
+	}
 }
 
 void Quad::calculate_vertex_normals(

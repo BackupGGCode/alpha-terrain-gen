@@ -11,7 +11,7 @@
  */
 
 #include "TerrainSegment.h"
-#include "heightgen.h"
+#include "Heightgen.h"
 #include "Vector3D.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -47,7 +47,7 @@ TerrainSegment::TerrainSegment(float x, float z, int width_quads, int height_qua
 TerrainSegment::~TerrainSegment() {
 	for(unsigned int i = 0; i < quad_arrays.size(); i++){
 		for(unsigned int j = 0; j < quad_arrays[i].size(); j++){
-			delete(quad_arrays)[i][j];
+			delete quad_arrays[i][j];
 		}
 	}
 	quad_arrays.clear();

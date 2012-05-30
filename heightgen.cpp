@@ -1,5 +1,5 @@
 /*
- * heightgen.cpp
+ * HeightGen.cpp
  *
  * HeightMap generation.
  *
@@ -13,8 +13,8 @@
 
 #include <math.h>
 
-#include "detrand.h"
-#include "heightgen.h"
+#include "DetRand.h"
+#include "HeightGen.h"
 
 #define PI 3.1415926
 
