@@ -165,6 +165,18 @@ void ControllableCamera::camera_rotation_mouse(int mouse_x, int mouse_y) {
 	int horizantal_movement = mouse_x - window_centre_x;
 	int vertical_movement = mouse_y - window_centre_y;
 
+	/* If this is the first time, don't move the camera.
+	 * This is so the camera is pointed at the same place when the app is
+	 * started, no matter where the cursor was when the user started the
+	 * program.
+	 */
+	bool static first_time = true;
+	if(first_time){
+		first_time = false;
+		SDL_WarpMouse(window_centre_x, window_centre_y);
+		return;
+	}
+
 	cam->cam_x_rot += vertical_movement / vertMouseSensitivity;
 	cam->cam_y_rot += horizantal_movement / horizMouseSensitivity;
 
