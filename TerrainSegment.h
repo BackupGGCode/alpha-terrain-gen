@@ -22,9 +22,11 @@ private:
 	std::vector <std::vector<Quad*> > quad_arrays;
 
 public:
-	TerrainSegment(float x, float z, int width_quads, int height_quads, float quad_size);
+	TerrainSegment(float x, float z, float segment_size, float quad_size);
 	virtual ~TerrainSegment();
 	void init_quads();
+
+	GLint terrain_GL_obj;
 
 private:
 	Quad* calculateNewQuad(float x, float z, float size);

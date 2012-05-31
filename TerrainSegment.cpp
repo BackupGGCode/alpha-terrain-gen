@@ -18,17 +18,22 @@
 
 #define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 2
 
-TerrainSegment::TerrainSegment(float x, float z, int width_quads, int height_quads, float quad_size) {
-	// Creates the two dimensiona array full of quads
+TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size) {
+	int quad_width_count = (int)(segment_size / quad_size);
+	int quad_height_count = (int)(segment_size / quad_size);
+
+	// Creates the two dimensional array full of quads
 	// The array size is increased so that the extra quads are used for
 	// calculating vertex normals on the edge quads.
 
 	// These extra quads are not drawn.
-	quad_arrays.resize(width_quads + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
+	quad_arrays.resize(quad_width_count + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
 	for(unsigned int i = 0; i < quad_arrays.size(); i++){
-		quad_arrays[i].resize(height_quads + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
+		quad_arrays[i].resize(quad_height_count + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
 		for(unsigned int j = 0; j < quad_arrays[i].size(); j++){
-			quad_arrays[i][j] = calculateNewQuad(x + (quad_size * i), z + (quad_size * j), quad_size);
+			// - 1 is taken from the i and j index values so that the imaginary quads are rendered outside of the specified
+			// location
+			quad_arrays[i][j] = calculateNewQuad(x + (quad_size * (i - 1)), z + (quad_size * (j - 1)), quad_size);
 		}
 	}
 
@@ -65,7 +70,7 @@ void TerrainSegment::init_quads(){
 	glEnd();
 }
 
-#define TERRAIN_MULTIPLIER 6
+#define TERRAIN_MULTIPLIER 10
 
 /** Calculates a new quad given the x and z coordinate, and the size of the quad. */
 Quad* TerrainSegment::calculateNewQuad(float x, float z, float size){

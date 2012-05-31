@@ -42,13 +42,13 @@ private:
 
 	bool quit_flag;
 
+	// Terrain Vectors
+	std::vector<TerrainSegment*> terrain_segments;
+
 	// Keyboard input struct for camera control
 	Inputs* input;
 
-	TerrainSegment* terrainSegment;
 	ControllableCamera* camera;
-
-	GLint terrain_obj;
 
 	void draw();
 	void reshape(int width, int height);

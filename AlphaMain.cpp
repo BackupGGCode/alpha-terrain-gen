@@ -47,17 +47,37 @@ AlphaMain::AlphaMain() {
 	GLfloat specular[]  = {1.0f, 1.0f, 1.0f, 1.0f};
 
 	// TODO: More terrain segments
-	terrainSegment = new TerrainSegment(-40, -40, 160, 160, 0.5);
+	terrain_segments.resize(81);
+	float start_x = -40;
+	float start_z = -40;
 
-	// TODO: Better lighting
+	float quad_size = 0.25f;
+	float segment_size = 20.0f;
+
+	float x = start_x;
+	float z = start_z;
+
+	for(int i = 0; i < 9; i++){
+		for(int j = 0; j < 9; j++){
+			terrain_segments[(i * 9) + j] = new TerrainSegment(x, z, segment_size, quad_size);
+			z += segment_size;
+		}
+		z = start_z;
+		x += segment_size;
+	}
+
+	// Lighting setup
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
 
+	// Enable culling of rear faces
 	glEnable(GL_CULL_FACE);
+	// Enable lighting
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	// Enable occlusion of objects
 	glEnable(GL_DEPTH_TEST);
 
 	// Fog
@@ -72,31 +92,36 @@ AlphaMain::AlphaMain() {
 	glFogf(GL_FOG_START, 30.0f);             // Fog Start Depth
 	glFogf(GL_FOG_END, 400.0f);               // Fog End Depth
 	glEnable(GL_FOG);                   // Enables GL_FOG
-	/* End fog */
 
-	terrain_obj = glGenLists(1);
+	/* Initialise terrain segments */
+	for(unsigned int i = 0; i < terrain_segments.size(); i++){
+		terrain_segments[i]->terrain_GL_obj = glGenLists(1);
 
-	// TODO: Random Colour terrain generation, should probably a bit less random at some point
-	GLfloat materialColour[4];
-	materialColour[0] = (float)rand() / RAND_MAX;
-	materialColour[1] = (float)rand() / RAND_MAX;
-	materialColour[2] = (float)rand() / RAND_MAX;
-	materialColour[3] = 1.0f;
+		// TODO: Random Colour terrain generation, should probably a bit less random at some point
+		GLfloat materialColour[4];
+		materialColour[0] = (float)rand() / RAND_MAX;
+		materialColour[1] = (float)rand() / RAND_MAX;
+		materialColour[2] = (float)rand() / RAND_MAX;
+		materialColour[3] = 1.0f;
 
-	glNewList(terrain_obj, GL_COMPILE);
+		glNewList(terrain_segments[i]->terrain_GL_obj, GL_COMPILE);
 
-	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColour);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-	glMaterialf(GL_FRONT, GL_SHININESS, 8);
+		glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialColour);
+		glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+		glMaterialf(GL_FRONT, GL_SHININESS, 32);
 
-	terrainSegment->init_quads();
-	glEndList();
+		terrain_segments[i]->init_quads();
+		glEndList();
+	}
 
 	glEnable(GL_NORMALIZE);
 }
 
 AlphaMain::~AlphaMain() {
-	delete(terrainSegment);
+	for(unsigned int i = 0; i < terrain_segments.size(); i++){
+		delete(terrain_segments[i]);
+	}
+	terrain_segments.clear();
 	delete(input);
 }
 
@@ -181,7 +206,10 @@ void AlphaMain::draw() {
 	glPushMatrix();
 
 	// Draw Terrain
-	glCallList(terrain_obj);
+	for(unsigned int i = 0; i < terrain_segments.size(); i++){
+		glCallList(terrain_segments[i]->terrain_GL_obj);
+	}
+
 
 	glPopMatrix();
 
