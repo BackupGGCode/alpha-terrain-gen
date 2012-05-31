@@ -29,8 +29,8 @@ class AlphaMain {
 private:
 	SDL_Surface *screen;
 
-	GLint T0;
-	GLint frames;
+	GLuint T0;
+	GLuint frames;
 
 	// Wireframe mode toggle variable
 	bool wireframe;

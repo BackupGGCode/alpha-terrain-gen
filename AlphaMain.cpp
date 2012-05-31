@@ -48,11 +48,11 @@ AlphaMain::AlphaMain() {
 
 	// TODO: More terrain segments
 	terrain_segments.resize(81);
-	float start_x = -40;
-	float start_z = -40;
+	float start_x = -120;
+	float start_z = -120;
 
-	float quad_size = 0.5f;
-	float segment_size = 20.0f;
+	float quad_size = 1.0f;
+	float segment_size = 60.0f;
 
 	float x = start_x;
 	float z = start_z;

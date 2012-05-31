@@ -28,7 +28,7 @@ public:
 
 	Vector3D centre;
 
-	GLint terrain_GL_obj;
+	GLuint terrain_GL_obj;
 
 private:
 	Quad* calculateNewQuad(float x, float z, float size);
