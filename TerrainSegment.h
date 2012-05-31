@@ -26,6 +26,8 @@ public:
 	virtual ~TerrainSegment();
 	void init_quads();
 
+	Vector3D centre;
+
 	GLint terrain_GL_obj;
 
 private:

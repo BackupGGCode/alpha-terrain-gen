@@ -16,7 +16,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 2
+// TODO: Should work with 2, 4 temp fix
+#define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 4
 
 TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size) {
 	int quad_width_count = (int)(segment_size / quad_size);
@@ -38,8 +39,8 @@ TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_
 	}
 
 	// Calculate vertex normals for each vertex
-	for(unsigned int i = 1; i < quad_arrays.size() - 1; i++){
-		for(unsigned int j = 1; j < quad_arrays[i].size() -1; j++){
+	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
+		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
 			quad_arrays[i][j]->calculate_vertex_normals(
 					quad_arrays[i-1][j-1], quad_arrays[i][j-1], quad_arrays[i+1][j-1],
 					quad_arrays[i-1][j], /* This Quad */	    quad_arrays[i+1][j],
@@ -47,6 +48,9 @@ TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_
 					);
 		}
 	}
+
+	// Set the centre vector for the segment
+	centre = Vector3D(x + segment_size / 2, 0.0, z + segment_size / 2);
 }
 
 TerrainSegment::~TerrainSegment() {
@@ -62,8 +66,9 @@ TerrainSegment::~TerrainSegment() {
 void TerrainSegment::init_quads(){
 	glShadeModel(GL_SMOOTH);
 	glBegin(GL_QUADS);
-	for(unsigned int i = 1; i < quad_arrays.size() - 1; i++){
-		for(unsigned int j = 1; j < quad_arrays[i].size() - 1; j++){
+	// TODO: 2 should be 1 if I can fix the edge normals problem
+	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
+		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
 			quad_arrays[i][j]->init();
 		}
 	}

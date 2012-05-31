@@ -10,7 +10,10 @@
 #include "Quad.h"
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "Vector3D.h"
+
+#define PI 3.1415926
 
 Quad::Quad(){
 
@@ -61,23 +64,66 @@ Vector3D* Quad::calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direc
 	return new Vector3D(result.x, result.y, result.z);
 }
 
+#define SAND_MAX 4.0
+#define SAND_MIN 6.0
+
+/** Performs a cosine interpolation between two values */
+static double interpolate(double a, double b, double x){
+	double ft = x * PI;
+	double f = (1 - cos(ft)) * 0.5;
+
+	return a * (1 - f) + b * f;
+}
+
+/** Sets the material colour, based on the height of the vertex */
+void Quad::set_material_colour(Vector3D* vertex)
+{
+    // using vertex normals
+    GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat material_colour[4] = {0.0, 0.8, 0.2, 1.0};
+    if(vertex->y < SAND_MAX){
+		material_colour[0] = 0.7f;
+	}
+	else if (vertex->y < SAND_MIN){
+		material_colour[0] = interpolate(0.7f, 0.0f, (vertex->y - SAND_MAX) / (SAND_MIN - SAND_MAX)) ;
+	}
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, material_colour);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, 96);
+}
 
 /** Initializes the quad for rendering by OpenGL
  * Should be used as part of the GL_QUADS initialization loop */
 void Quad::init(){
 
+	if(using_vertex_normals){
 	// using vertex normals
+    set_material_colour(vertex_data[0]);
+
 	glNormal3f(vertex_normals[0]->x,vertex_normals[0]->y, vertex_normals[0]->z);
 	glVertex3f(vertex_data[0]->x, vertex_data[0]->y, vertex_data[0]->z);
 
+	set_material_colour(vertex_data[1]);
 	glNormal3f(vertex_normals[1]->x,vertex_normals[1]->y, vertex_normals[1]->z);
 	glVertex3f(vertex_data[1]->x, vertex_data[1]->y, vertex_data[1]->z);
 
+	set_material_colour(vertex_data[2]);
 	glNormal3f(vertex_normals[2]->x,vertex_normals[2]->y, vertex_normals[2]->z);
 	glVertex3f(vertex_data[2]->x, vertex_data[2]->y, vertex_data[2]->z);
 
+	set_material_colour(vertex_data[3]);
 	glNormal3f(vertex_normals[3]->x,vertex_normals[3]->y, vertex_normals[3]->z);
 	glVertex3f(vertex_data[3]->x, vertex_data[3]->y, vertex_data[3]->z);
+	}
+	// If there is no vertex normals, don't use any normals.
+	// This should not be reached in ordinary circumstances
+	else{
+		glNormal3f(0,0,1);
+		glVertex3f(vertex_data[0]->x, vertex_data[0]->y, vertex_data[0]->z);
+		glVertex3f(vertex_data[1]->x, vertex_data[1]->y, vertex_data[1]->z);
+		glVertex3f(vertex_data[2]->x, vertex_data[2]->y, vertex_data[2]->z);
+		glVertex3f(vertex_data[3]->x, vertex_data[3]->y, vertex_data[3]->z);
+	}
 
 }
 
