@@ -7,12 +7,10 @@
 
 #include "Texture.h"
 
-Texture::Texture(){
-
-}
-
-/* Image loading class */
-Texture::Texture(const char* file_name) {
+/** Loads the texture given by file_name,
+ * and stores the OpenGL handle to that texture in the handle variable.
+ */
+bool load_texture(const char* file_name, GLuint* handle) {
 	SDL_Surface *surface; // This surface will tell us the details of the image
 	GLenum texture_format;
 	GLint num_colours;
@@ -36,13 +34,14 @@ Texture::Texture(const char* file_name) {
 			texture_format = GL_RGB;
 		} else {
 			printf("Texture loading error : Not true colour image.\n");
+			return false;
 		}
 
 		// Get texture handle
-		glGenTextures(1, &texture);
+		glGenTextures(1, handle);
 
 		// Bind the texture object to the handle created
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(GL_TEXTURE_2D, *handle);
 
 		// Texture parameters
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -56,20 +55,14 @@ Texture::Texture(const char* file_name) {
 				texture_format, GL_UNSIGNED_BYTE, surface->pixels);
 	} else {
 		printf("SDL could not load image.bmp: %s\n", SDL_GetError());
+		return false;
 	}
 
 	// Free the SDL_Surface only if it was successfully created
 	if (surface) {
 		SDL_FreeSurface(surface);
+		return true;
 	}
-
-}
-
-Texture::~Texture() {
-
-}
-
-GLuint Texture::get_texture_handle() {
-	return texture;
+	return false;
 }
 

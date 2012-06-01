@@ -11,10 +11,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include "Vector3D.h"
-
-//TODO: remove me
-#include <stdio.h>
 
 #define PI 3.1415926
 
@@ -44,6 +40,11 @@ Quad::~Quad() {
 		delete(vertex_normals[1]);
 		delete(vertex_normals[2]);
 		delete(vertex_normals[3]);
+
+		delete(vertex_materials[0]);
+		delete(vertex_materials[1]);
+		delete(vertex_materials[2]);
+		delete(vertex_materials[3]);
 	}
 }
 
@@ -60,6 +61,13 @@ void Quad::calculate_vertex_normals(
 	using_vertex_normals = true;
 }
 
+void Quad::calculate_materials(){
+	vertex_materials[0] = get_material(vertex_data[0], vertex_normals[0]);
+	vertex_materials[1] = get_material(vertex_data[1], vertex_normals[1]);
+	vertex_materials[2] = get_material(vertex_data[2], vertex_normals[2]);
+	vertex_materials[3] = get_material(vertex_data[3], vertex_normals[3]);
+}
+
 Vector3D* Quad::calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direct2){
 	Vector3D result = *this->surface_normal;
 	result = result + *corner->surface_normal + *direct1->surface_normal + *direct2->surface_normal;
@@ -70,8 +78,8 @@ Vector3D* Quad::calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direc
 #define SAND_MAX 4.0
 #define SAND_MIN 6.0
 
-#define ROCK_MIN 0.125
-#define ROCK_MAX 0.30
+#define ROCK_MIN 0.175
+#define ROCK_MAX 0.375
 
 /** Performs a cosine interpolation between two values */
 static double interpolate(double a, double b, double x){
@@ -82,36 +90,48 @@ static double interpolate(double a, double b, double x){
 }
 
 /** Sets the material colour, based on the height of the vertex */
-void Quad::set_material_colour(Vector3D* vertex, Vector3D* normal)
+Colour* Quad::get_material(Vector3D* vertex, Vector3D* normal)
 {
     // using vertex normals
-    GLfloat specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat material_colour[4] = {0.0, 0.8, 0.2, 1.0};
+    Colour* material_colour = new Colour(0.0, 0.8, 0.2, 1.0);
 
     // Set sand colour
     if(vertex->y < SAND_MAX){
-		material_colour[0] = 0.7f;
+		material_colour->r = 0.7f;
 	}
 	else if (vertex->y < SAND_MIN){
-		material_colour[0] = interpolate(0.7f, 0.0f, (vertex->y - SAND_MAX) / (SAND_MIN - SAND_MAX)) ;
+		material_colour->r = interpolate(0.7f, 0.0f, (vertex->y - SAND_MAX) / (SAND_MIN - SAND_MAX)) ;
 	}
 
     // Set rock surfaces if something that looks like a cliff face
     // Use the normal to determine which direction a vertex is pointing
-    float avg_normal = fabs(normal->x) + fabs(normal->z) / 2;
-    if(avg_normal > ROCK_MAX){
-    	material_colour[0] = 0.35f;
-    	material_colour[1] = 0.65f;
-    	material_colour[2] = 0.4f;
-    }
-    else if(avg_normal > ROCK_MIN){
-    	material_colour[0] = interpolate(0.35f, material_colour[0], avg_normal - ROCK_MIN / (ROCK_MAX - ROCK_MIN));
-    	material_colour[1] = interpolate(0.65f, material_colour[1], avg_normal - ROCK_MIN / (ROCK_MAX - ROCK_MIN));
-    	material_colour[2] = interpolate(0.4f, material_colour[2], avg_normal - ROCK_MIN / (ROCK_MAX - ROCK_MIN));
-    }
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, material_colour);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-    glMaterialf(GL_FRONT, GL_SHININESS, 96);
+    // TODO: Fix rock?
+//    if(fabs(normal->x) > ROCK_MAX){
+//    	material_colour->r = 0.35f;
+//    	material_colour->g = 0.65f;
+//    	material_colour->b = 0.4f;
+//    	material_type = SAND;
+//    }
+//    else if(fabs(normal->x) > ROCK_MIN){
+//    	material_colour->r = interpolate(0.35f, material_colour->r, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+//    	material_colour->g = interpolate(0.65f, material_colour->g, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+//    	material_colour->b = interpolate(0.4f, material_colour->b, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+//    	material_type = SAND;
+//    }
+//    if(fabs(normal->z) > ROCK_MAX){
+//    	material_colour->r = 0.35f;
+//    	material_colour->g = 0.65f;
+//    	material_colour->b = 0.4f;
+//    	material_type = ROCK;
+//    }
+//    else if(fabs(normal->z) > ROCK_MIN){
+//    	material_colour->r = interpolate(0.35f, material_colour->r, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+//    	material_colour->g = interpolate(0.65f, material_colour->g, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+//    	material_colour->b = interpolate(0.4f, material_colour->b, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+//    	material_type = ROCK;
+//    }
+
+    return material_colour;
 }
 
 /** Initializes the quad for rendering by OpenGL
@@ -120,22 +140,28 @@ void Quad::init(GLuint texture, float tex_x, float tex_y, float tex_size){
 
 	if(using_vertex_normals){
 	// using vertex normals
-	set_material_colour(vertex_data[0], vertex_normals[0]);
+	GLfloat material[4];
+
+	vertex_materials[0]->getArray(material);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, material);
     glTexCoord2f (tex_x, tex_y);
 	glNormal3f(vertex_normals[0]->x,vertex_normals[0]->y, vertex_normals[0]->z);
 	glVertex3f(vertex_data[0]->x, vertex_data[0]->y, vertex_data[0]->z);
 
-	set_material_colour(vertex_data[1], vertex_normals[1]);
+	vertex_materials[1]->getArray(material);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, material);
 	glTexCoord2f (tex_x + tex_size, tex_y);
 	glNormal3f(vertex_normals[1]->x,vertex_normals[1]->y, vertex_normals[1]->z);
 	glVertex3f(vertex_data[1]->x, vertex_data[1]->y, vertex_data[1]->z);
 
-	set_material_colour(vertex_data[2], vertex_normals[2]);
+	vertex_materials[2]->getArray(material);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, material);
 	glTexCoord2f (tex_x + tex_size, tex_y + tex_size);
 	glNormal3f(vertex_normals[2]->x,vertex_normals[2]->y, vertex_normals[2]->z);
 	glVertex3f(vertex_data[2]->x, vertex_data[2]->y, vertex_data[2]->z);
 
-	set_material_colour(vertex_data[3], vertex_normals[3]);
+	vertex_materials[3]->getArray(material);
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, material);
 	glTexCoord2f (tex_x, tex_y + tex_size);
 	glNormal3f(vertex_normals[3]->x,vertex_normals[3]->y, vertex_normals[3]->z);
 	glVertex3f(vertex_data[3]->x, vertex_data[3]->y, vertex_data[3]->z);

@@ -48,6 +48,7 @@ TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_
 					quad_arrays[i-1][j], /* This Quad */	    quad_arrays[i+1][j],
 					quad_arrays[i-1][j+1], quad_arrays[i][j+1], quad_arrays[i+1][j+1]
 					);
+			quad_arrays[i][j]->calculate_materials();
 		}
 	}
 

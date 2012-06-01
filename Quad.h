@@ -12,6 +12,7 @@
 
 #include <GL/gl.h>
 #include "Vector3D.h"
+#include "Colour.h"
 
 class Quad {
 public:
@@ -28,12 +29,26 @@ public:
 			Quad* SWQuad,		Quad* SQuad,		Quad* SEQuad
 	);
 
+	void calculate_materials();
+
 private:
+
+	enum eMaterial_Type{
+		GRASS,
+		SAND,
+		ROCK
+	};
+
 	bool using_vertex_normals;
 	Vector3D* vertex_data[4];
 	Vector3D* vertex_normals[4];
 	Vector3D* surface_normal;
-	void set_material_colour(Vector3D*, Vector3D*);
+
+	Colour* vertex_materials[4];
+
+	eMaterial_Type material_type;
+
+	Colour* get_material(Vector3D* vertex, Vector3D* normal);
     void calculate_surface_normals();
 	Vector3D* calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direct2);
 };
