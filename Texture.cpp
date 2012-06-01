@@ -36,7 +36,6 @@ Texture::Texture(const char* file_name) {
 			texture_format = GL_RGB;
 		} else {
 			printf("Texture loading error : Not true colour image.\n");
-			return;
 		}
 
 		// Get texture handle
@@ -49,14 +48,12 @@ Texture::Texture(const char* file_name) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 		// Set texture object data based on the information provided by the SDL
 		// Image loading
-		glTexImage2D(GL_TEXTURE_2D, 0, num_colours, surface->w, surface->h, 0,
+		gluBuild2DMipmaps(GL_TEXTURE_2D, num_colours, surface->w, surface->h,
 				texture_format, GL_UNSIGNED_BYTE, surface->pixels);
-
-		// TODO: How do I mipmap?
 	} else {
 		printf("SDL could not load image.bmp: %s\n", SDL_GetError());
 	}

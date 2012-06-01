@@ -43,6 +43,8 @@ private:
 
 	bool fog_enabled;
 
+	bool texture_mapping;
+
 	bool quit_flag;
 
 	// Terrain Vectors

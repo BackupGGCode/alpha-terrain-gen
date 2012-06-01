@@ -30,9 +30,6 @@ AlphaMain::AlphaMain() {
 	T0 = 0;
 	frames = 0;
 
-	wireframe = false;
-	window_active = true;
-
 	// Keyboard input struct
 	input = new Inputs();
 	input->backward = false;
@@ -50,11 +47,11 @@ AlphaMain::AlphaMain() {
 
 	// TODO: More terrain segments
 	terrain_segments.resize(81);
-	float start_x = -10;
-	float start_z = -10;
+	float start_x = -120;
+	float start_z = -120;
 
 	float quad_size = 1.0f;
-	float segment_size = 10.0f;
+	float segment_size = 30.0f;
 
 	float x = start_x;
 	float z = start_z;
@@ -110,6 +107,13 @@ AlphaMain::AlphaMain() {
 	}
 
 	glEnable(GL_NORMALIZE);
+
+	// set toggle parameters
+	fog_enabled = true;
+	texture_mapping = true;
+
+	wireframe = false;
+	window_active = true;
 }
 
 AlphaMain::~AlphaMain() {
@@ -305,6 +309,15 @@ void AlphaMain::handle_event(SDL_Event event)
 						} else {
 							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 							wireframe = true;
+						}
+						break;
+					case SDLK_t:
+						if (!texture_mapping) {
+							glEnable(GL_TEXTURE_2D);
+							texture_mapping = true;
+						} else {
+							glDisable(GL_TEXTURE_2D);
+							texture_mapping = false;
 						}
 						break;
 					default:
