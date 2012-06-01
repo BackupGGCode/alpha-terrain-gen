@@ -18,7 +18,7 @@ public:
 	Quad();
 	Quad(Vector3D* vertex1, Vector3D* vertex2, Vector3D* vertex3, Vector3D* vertex4);
 	virtual ~Quad();
-	void init();
+	void init(GLuint texture, float tex_x, float tex_y, float tex_size);
 
 	Vector3D* get_surface_normal();
 

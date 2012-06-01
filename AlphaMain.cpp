@@ -25,6 +25,8 @@ AlphaMain::AlphaMain() {
 	}
 	SDL_WM_SetCaption("Alpha", "alpha");
 
+	Texture terrain_texture = Texture("dirt.bmp");
+
 	T0 = 0;
 	frames = 0;
 
@@ -48,11 +50,11 @@ AlphaMain::AlphaMain() {
 
 	// TODO: More terrain segments
 	terrain_segments.resize(81);
-	float start_x = -120;
-	float start_z = -120;
+	float start_x = -10;
+	float start_z = -10;
 
 	float quad_size = 1.0f;
-	float segment_size = 60.0f;
+	float segment_size = 10.0f;
 
 	float x = start_x;
 	float z = start_z;
@@ -60,7 +62,8 @@ AlphaMain::AlphaMain() {
 	// Statically generate terrain segments
 	for(int i = 0; i < 9; i++){
 		for(int j = 0; j < 9; j++){
-			terrain_segments[(i * 9) + j] = new TerrainSegment(x, z, segment_size, quad_size);
+			terrain_segments[(i * 9) + j] = new TerrainSegment(x, z,
+					segment_size, quad_size, terrain_texture.get_texture_handle());
 			z += segment_size;
 		}
 		z = start_z;
@@ -75,6 +78,10 @@ AlphaMain::AlphaMain() {
 
 	// Enable culling of rear faces
 	glEnable(GL_CULL_FACE);
+	// Enable Textures
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glEnable(GL_TEXTURE_2D);
+
 	// Enable lighting
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);

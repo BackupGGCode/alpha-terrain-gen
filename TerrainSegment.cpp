@@ -19,18 +19,20 @@
 // TODO: Should work with 2, 4 temp fix
 #define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 4
 
-TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size) {
-	int quad_width_count = (int)(segment_size / quad_size);
-	int quad_height_count = (int)(segment_size / quad_size);
+TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size, GLuint texture) {
+	this->texture = texture;
+
+	quad_count_width = (int)(segment_size / quad_size);
+	quad_count_height = (int)(segment_size / quad_size);
 
 	// Creates the two dimensional array full of quads
 	// The array size is increased so that the extra quads are used for
 	// calculating vertex normals on the edge quads.
 
 	// These extra quads are not drawn.
-	quad_arrays.resize(quad_width_count + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
+	quad_arrays.resize(quad_count_width + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
 	for(unsigned int i = 0; i < quad_arrays.size(); i++){
-		quad_arrays[i].resize(quad_height_count + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
+		quad_arrays[i].resize(quad_count_height + EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC);
 		for(unsigned int j = 0; j < quad_arrays[i].size(); j++){
 			// - 1 is taken from the i and j index values so that the imaginary quads are rendered outside of the specified
 			// location
@@ -62,15 +64,28 @@ TerrainSegment::~TerrainSegment() {
 	quad_arrays.clear();
 }
 
+#define TEX_LOOP_PER_SEGMENT 2
+
 /** Initializes all of the quads for rendering by OpenGL */
 void TerrainSegment::init_quads(){
 	glShadeModel(GL_SMOOTH);
 	glBegin(GL_QUADS);
+
+	glBindTexture (GL_TEXTURE_2D, texture);
+
+	float tex_x = 0.0;
+	float tex_y = 0.0;
+
+	float tex_size = (1.0 / quad_count_height) * TEX_LOOP_PER_SEGMENT;
+
 	// TODO: 2 should be 1 if I can fix the edge normals problem
 	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
 		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
-			quad_arrays[i][j]->init();
+			quad_arrays[i][j]->init(texture, tex_x, tex_y, tex_size);
+			tex_x += tex_size;
 		}
+		tex_x = 0;
+		tex_y += tex_size;
 	}
 	glEnd();
 }

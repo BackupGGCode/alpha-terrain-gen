@@ -94,24 +94,27 @@ void Quad::set_material_colour(Vector3D* vertex)
 
 /** Initializes the quad for rendering by OpenGL
  * Should be used as part of the GL_QUADS initialization loop */
-void Quad::init(){
+void Quad::init(GLuint texture, float tex_x, float tex_y, float tex_size){
 
 	if(using_vertex_normals){
 	// using vertex normals
-    set_material_colour(vertex_data[0]);
-
+	set_material_colour(vertex_data[0]);
+    glTexCoord2f (tex_x, tex_y);
 	glNormal3f(vertex_normals[0]->x,vertex_normals[0]->y, vertex_normals[0]->z);
 	glVertex3f(vertex_data[0]->x, vertex_data[0]->y, vertex_data[0]->z);
 
 	set_material_colour(vertex_data[1]);
+	glTexCoord2f (tex_x + tex_size, tex_y);
 	glNormal3f(vertex_normals[1]->x,vertex_normals[1]->y, vertex_normals[1]->z);
 	glVertex3f(vertex_data[1]->x, vertex_data[1]->y, vertex_data[1]->z);
 
 	set_material_colour(vertex_data[2]);
+	glTexCoord2f (tex_x + tex_size, tex_y + tex_size);
 	glNormal3f(vertex_normals[2]->x,vertex_normals[2]->y, vertex_normals[2]->z);
 	glVertex3f(vertex_data[2]->x, vertex_data[2]->y, vertex_data[2]->z);
 
 	set_material_colour(vertex_data[3]);
+	glTexCoord2f (tex_x, tex_y + tex_size);
 	glNormal3f(vertex_normals[3]->x,vertex_normals[3]->y, vertex_normals[3]->z);
 	glVertex3f(vertex_data[3]->x, vertex_data[3]->y, vertex_data[3]->z);
 	}

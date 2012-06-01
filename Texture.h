@@ -10,15 +10,20 @@
 
 // GL includes
 #include <GL/gl.h>
+#include <GL/glut.h>
 
 // SDL includes
 #include "SDL.h"
+
+// C++ include
+#include <string>
 
 class Texture {
 private:
 	GLuint texture; // This is a handle to our texture object
 public:
-	Texture(char* filename);
+	Texture();
+	Texture(const char* file_name);
 	virtual ~Texture();
 	GLuint get_texture_handle();
 };

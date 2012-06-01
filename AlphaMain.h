@@ -25,6 +25,9 @@
 // Camera
 #include "ControllableCamera.h"
 
+// Texture
+#include "Texture.h"
+
 class AlphaMain {
 private:
 	SDL_Surface *screen;
