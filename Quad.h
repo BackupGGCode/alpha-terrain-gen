@@ -33,7 +33,7 @@ private:
 	Vector3D* vertex_data[4];
 	Vector3D* vertex_normals[4];
 	Vector3D* surface_normal;
-	void set_material_colour(Vector3D*);
+	void set_material_colour(Vector3D*, Vector3D*);
     void calculate_surface_normals();
 	Vector3D* calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direct2);
 };
