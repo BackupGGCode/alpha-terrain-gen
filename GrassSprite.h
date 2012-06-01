@@ -19,7 +19,8 @@ private:
 	Vector3D* vertex_data[4];
 	Vector3D* normal;
 public:
-	GrassSprite(GLint texture_id, Vector3D* vertex1, Vector3D* vertex2,
+	GrassSprite();
+	GrassSprite(Vector3D* vertex1, Vector3D* vertex2,
 			Vector3D* vertex3, Vector3D* vertex4, Vector3D* normal);
 	virtual ~GrassSprite();
 

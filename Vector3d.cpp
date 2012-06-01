@@ -13,6 +13,12 @@
 Vector3D::Vector3D() {
 }
 
+Vector3D::Vector3D(const Vector3D& param) {
+	this->x = param.x;
+	this->y = param.y;
+	this->z = param.z;
+}
+
 
 Vector3D::Vector3D(GLfloat x, GLfloat y, GLfloat z) {
 	this->x = x;
@@ -21,6 +27,13 @@ Vector3D::Vector3D(GLfloat x, GLfloat y, GLfloat z) {
 }
 
 Vector3D::~Vector3D() {
+}
+
+void Vector3D::normalise(){
+	float norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
+	x = x / norm;
+	y = y / norm;
+	z = z / norm;
 }
 
 Vector3D Vector3D::operator + (Vector3D param) {
@@ -35,9 +48,17 @@ Vector3D Vector3D::operator - (Vector3D param) {
 Vector3D Vector3D::operator / (float param) {
 	return Vector3D(this->x / param, this->y / param,this->z / param);
 }
+/** Scalar division */
+Vector3D Vector3D::operator / (int param) {
+	return Vector3D(this->x / param, this->y / param,this->z / param);
+}
 
 /** Scalar division */
 Vector3D Vector3D::operator * (float param) {
+	return Vector3D(this->x * param, this->y * param,this->z * param);
+}
+/** Scalar division */
+Vector3D Vector3D::operator * (int param) {
 	return Vector3D(this->x * param, this->y * param,this->z * param);
 }
 

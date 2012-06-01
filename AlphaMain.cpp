@@ -25,8 +25,11 @@ AlphaMain::AlphaMain() {
 	}
 	SDL_WM_SetCaption("Alpha", "alpha");
 
-	GLuint terrain_texture;
+	GLuint terrain_texture, grass_sprite_texture;
 	if(!load_texture("dirt.bmp", &terrain_texture)){
+		texture_mapping = false;
+	}
+	if(!load_texture("grass_sprite.bmp", &grass_sprite_texture)){
 		texture_mapping = false;
 	}
 
@@ -64,7 +67,7 @@ AlphaMain::AlphaMain() {
 	for(int i = 0; i < 9; i++){
 		for(int j = 0; j < 9; j++){
 			terrain_segments[(i * 9) + j] = new TerrainSegment(x, z,
-					segment_size, quad_size, terrain_texture);
+					segment_size, quad_size, terrain_texture, grass_sprite_texture);
 			z += segment_size;
 		}
 		z = start_z;
@@ -88,10 +91,6 @@ AlphaMain::AlphaMain() {
 	glEnable(GL_LIGHT0);
 	// Enable occlusion of objects
 	glEnable(GL_DEPTH_TEST);
-
-	// TODO: blend test
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Fog settings
 	GLfloat fogColor[4]= {0.4f,0.7f,1.0f, 1.0f};      // Fog / Sky Color

@@ -19,8 +19,11 @@
 // TODO: Should work with 2, 4 temp fix
 #define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 4
 
-TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size, GLuint texture) {
-	this->texture = texture;
+TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size,
+		GLuint terrain_texture,
+		GLuint grass_sprite_texture) {
+	this->terrain_texture_id = terrain_texture;
+	this->grass_sprite_texture_id = grass_sprite_texture;
 
 	quad_count_width = (int)(segment_size / quad_size);
 	quad_count_height = (int)(segment_size / quad_size);
@@ -52,6 +55,15 @@ TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_
 		}
 	}
 
+
+#ifdef GRASS_SPRITES
+	// Generate grass sprites
+	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
+		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
+			quad_arrays[i][j]->generate_grass_sprites();
+		}
+	}
+#endif
 	// Set the centre vector for the segment
 	centre = Vector3D(x + segment_size / 2, 0.0, z + segment_size / 2);
 }
@@ -70,9 +82,9 @@ TerrainSegment::~TerrainSegment() {
 /** Initializes all of the quads for rendering by OpenGL */
 void TerrainSegment::init_quads(){
 	glShadeModel(GL_SMOOTH);
-	glBegin(GL_QUADS);
+	glBindTexture (GL_TEXTURE_2D, terrain_texture_id);
 
-	glBindTexture (GL_TEXTURE_2D, texture);
+	glBegin(GL_QUADS);
 
 	float tex_x = 0.0;
 	float tex_y = 0.0;
@@ -82,13 +94,42 @@ void TerrainSegment::init_quads(){
 	// TODO: 2 should be 1 if I can fix the edge normals problem
 	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
 		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
-			quad_arrays[i][j]->init(texture, tex_x, tex_y, tex_size);
+			quad_arrays[i][j]->init(terrain_texture_id, tex_x, tex_y, tex_size);
 			tex_x += tex_size;
 		}
 		tex_x = 0;
 		tex_y += tex_size;
 	}
 	glEnd();
+
+	// Transparent grass textures
+
+	// Disable updating the occlusion data
+#ifdef GRASS_SPRITES
+	glDepthMask(GL_FALSE);
+	glDisable(GL_CULL_FACE);
+	// Enable blending
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glShadeModel(GL_SMOOTH);
+
+	glBindTexture (GL_TEXTURE_2D, grass_sprite_texture_id);
+
+	glBegin(GL_QUADS);
+
+	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
+		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
+			quad_arrays[i][j]->init_grass();
+		}
+	}
+
+	glEnd();
+
+	glDisable(GL_BLEND);
+	glEnable(GL_CULL_FACE);
+	glDepthMask(GL_TRUE);
+#endif
 }
 
 #define TERRAIN_MULTIPLIER 10

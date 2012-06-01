@@ -20,13 +20,14 @@
 class TerrainSegment {
 private:
 	std::vector <std::vector<Quad*> > quad_arrays;
-	GLuint texture;
+	GLuint terrain_texture_id;
+	GLuint grass_sprite_texture_id;
 
 	int quad_count_width;
 	int quad_count_height;
 
 public:
-	TerrainSegment(float x, float z, float segment_size, float quad_size, GLuint texture);
+	TerrainSegment(float x, float z, float segment_size, float quad_size, GLuint terrain_texture, GLuint grass_sprite_texture);
 	virtual ~TerrainSegment();
 	void init_quads();
 

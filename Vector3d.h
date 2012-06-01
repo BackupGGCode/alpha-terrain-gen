@@ -16,7 +16,10 @@ class Vector3D {
 public:
 	Vector3D(GLfloat x, GLfloat y, GLfloat z);
 	Vector3D();
+	Vector3D(const Vector3D& param);
 	virtual ~Vector3D();
+
+	void normalise();
 
 	GLfloat x;
 	GLfloat y;
@@ -25,7 +28,9 @@ public:
 	Vector3D operator + (Vector3D);
 	Vector3D operator - (Vector3D);
 	Vector3D operator / (float);
+	Vector3D operator / (int);
 	Vector3D operator * (float);
+	Vector3D operator * (int);
 };
 
 float distance(Vector3D, Vector3D);

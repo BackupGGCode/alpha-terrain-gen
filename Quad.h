@@ -12,24 +12,34 @@
 
 #include <GL/gl.h>
 #include "Vector3D.h"
+#include <vector>
 #include "Colour.h"
+#include "GrassSprite.h"
 
 class Quad {
 public:
 	Quad();
 	Quad(Vector3D* vertex1, Vector3D* vertex2, Vector3D* vertex3, Vector3D* vertex4);
 	virtual ~Quad();
+
+	// GL init
 	void init(GLuint texture, float tex_x, float tex_y, float tex_size);
 
+	// Normals
 	Vector3D* get_surface_normal();
-
 	void calculate_vertex_normals(
 			Quad* NWQuad,		Quad* NQuad,		Quad* NEQuad,
 			Quad* WQuad,		/* this QUAD */		Quad* EQuad,
 			Quad* SWQuad,		Quad* SQuad,		Quad* SEQuad
 	);
 
+	// Materials
 	void calculate_materials();
+
+	// Grass
+	void generate_grass_sprites();
+	void init_grass();
+
 
 private:
 
@@ -47,6 +57,8 @@ private:
 	Colour* vertex_materials[4];
 
 	eMaterial_Type material_type;
+
+	std::vector<GrassSprite*> grass;
 
 	Colour* get_material(Vector3D* vertex, Vector3D* normal);
     void calculate_surface_normals();

@@ -37,6 +37,7 @@ bool load_texture(const char* file_name, GLuint* handle) {
 			return false;
 		}
 
+
 		// Get texture handle
 		glGenTextures(1, handle);
 

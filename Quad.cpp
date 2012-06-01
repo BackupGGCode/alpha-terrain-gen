@@ -72,7 +72,11 @@ Vector3D* Quad::calculate_vertex_normal(Quad* corner, Quad* direct1, Quad* direc
 	Vector3D result = *this->surface_normal;
 	result = result + *corner->surface_normal + *direct1->surface_normal + *direct2->surface_normal;
 	result = result / 4;
-	return new Vector3D(result.x, result.y, result.z);
+
+	Vector3D* vertex_normal = new Vector3D(result.x, result.y, result.z);
+	vertex_normal->normalise();
+
+	return vertex_normal;
 }
 
 #define SAND_MAX 4.0
@@ -106,30 +110,30 @@ Colour* Quad::get_material(Vector3D* vertex, Vector3D* normal)
     // Set rock surfaces if something that looks like a cliff face
     // Use the normal to determine which direction a vertex is pointing
     // TODO: Fix rock?
-//    if(fabs(normal->x) > ROCK_MAX){
-//    	material_colour->r = 0.35f;
-//    	material_colour->g = 0.65f;
-//    	material_colour->b = 0.4f;
-//    	material_type = SAND;
-//    }
-//    else if(fabs(normal->x) > ROCK_MIN){
-//    	material_colour->r = interpolate(0.35f, material_colour->r, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
-//    	material_colour->g = interpolate(0.65f, material_colour->g, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
-//    	material_colour->b = interpolate(0.4f, material_colour->b, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
-//    	material_type = SAND;
-//    }
-//    if(fabs(normal->z) > ROCK_MAX){
-//    	material_colour->r = 0.35f;
-//    	material_colour->g = 0.65f;
-//    	material_colour->b = 0.4f;
-//    	material_type = ROCK;
-//    }
-//    else if(fabs(normal->z) > ROCK_MIN){
-//    	material_colour->r = interpolate(0.35f, material_colour->r, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
-//    	material_colour->g = interpolate(0.65f, material_colour->g, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
-//    	material_colour->b = interpolate(0.4f, material_colour->b, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
-//    	material_type = ROCK;
-//    }
+    if(fabs(normal->x) > ROCK_MAX){
+    	material_colour->r = 0.35f;
+    	material_colour->g = 0.65f;
+    	material_colour->b = 0.4f;
+    	material_type = SAND;
+    }
+    else if(fabs(normal->x) > ROCK_MIN){
+    	material_colour->r = interpolate(0.35f, material_colour->r, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+    	material_colour->g = interpolate(0.65f, material_colour->g, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+    	material_colour->b = interpolate(0.4f, material_colour->b, (fabs(normal->x) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+    	material_type = SAND;
+    }
+    if(fabs(normal->z) > ROCK_MAX){
+    	material_colour->r = 0.35f;
+    	material_colour->g = 0.65f;
+    	material_colour->b = 0.4f;
+    	material_type = ROCK;
+    }
+    else if(fabs(normal->z) > ROCK_MIN){
+    	material_colour->r = interpolate(0.35f, material_colour->r, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+    	material_colour->g = interpolate(0.65f, material_colour->g, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+    	material_colour->b = interpolate(0.4f, material_colour->b, (fabs(normal->z) - ROCK_MIN) / (ROCK_MAX - ROCK_MIN));
+    	material_type = ROCK;
+    }
 
     return material_colour;
 }
@@ -188,4 +192,26 @@ void Quad::calculate_surface_normals(){
 	GLfloat z = (u.x * v.y) - (u.y * v.x);
 
 	surface_normal = new Vector3D(x,y,z);
+	surface_normal->normalise();
+}
+
+void Quad::generate_grass_sprites(){
+	if(material_type == GRASS){
+		grass.resize(1);
+		Vector3D* vertex1 = vertex_data[0];
+		Vector3D* vertex2 = vertex_data[1];
+		Vector3D* vertex3 = new Vector3D(*vertex_data[0] + (*surface_normal * 2));
+		Vector3D* vertex4 = new Vector3D(*vertex_data[1] + (*surface_normal * 2));
+		grass[0] = new GrassSprite(vertex1,
+				vertex2,
+				vertex3,
+				vertex4,
+				surface_normal);
+	}
+}
+
+void Quad::init_grass(){
+	for(unsigned int i = 0; i < grass.size(); i++){
+		grass[i]->init();
+	}
 }
