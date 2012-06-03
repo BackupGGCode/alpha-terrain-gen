@@ -16,8 +16,7 @@
 #include "SDL.h"
 
 // Terrain gen
-#include "HeightGen.h"
-#include "TerrainSegment.h"
+#include "TerrainManager.h"
 
 // Keyboard input struct
 #include "Inputs.h"
@@ -27,6 +26,8 @@
 
 // Texture
 #include "Texture.h"
+
+
 
 class AlphaMain {
 private:
@@ -47,8 +48,10 @@ private:
 
 	bool quit_flag;
 
-	// Terrain Vectors
-	std::vector<TerrainSegment*> terrain_segments;
+	GLfloat fog_distance_end;
+	GLfloat fog_distance_start;
+
+	TerrainManager* terrain_manager;
 
 	// Keyboard input struct for camera control
 	Inputs* input;

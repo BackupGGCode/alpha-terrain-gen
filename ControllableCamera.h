@@ -13,12 +13,11 @@
 
 #include <GL/gl.h>
 #include "Inputs.h"
+#include "Vector3D.h"
 
 struct Positions{
 	// Translation
-	GLfloat cam_x_pos;
-	GLfloat cam_y_pos;
-	GLfloat cam_z_pos;
+	Vector3D cam_pos;
 
 	// Rotation
 	GLfloat cam_x_rot;

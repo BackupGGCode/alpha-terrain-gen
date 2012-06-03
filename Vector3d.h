@@ -34,5 +34,6 @@ public:
 };
 
 float distance(Vector3D, Vector3D);
+float distance2d(Vector3D, Vector3D);
 
 #endif /* VECTOR3D_H_ */

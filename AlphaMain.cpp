@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <algorithm>
 
 AlphaMain::AlphaMain() {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -25,11 +26,8 @@ AlphaMain::AlphaMain() {
 	}
 	SDL_WM_SetCaption("Alpha", "alpha");
 
-	GLuint terrain_texture, grass_sprite_texture;
+	GLuint terrain_texture;
 	if(!load_texture("dirt.bmp", &terrain_texture)){
-		texture_mapping = false;
-	}
-	if(!load_texture("grass_sprite.bmp", &grass_sprite_texture)){
 		texture_mapping = false;
 	}
 
@@ -51,29 +49,6 @@ AlphaMain::AlphaMain() {
 	GLfloat diffuse[]  = {0.7f, 0.7f, 0.7f, 1.0f};
 	GLfloat specular[]  = {1.0f, 1.0f, 1.0f, 1.0f};
 
-	// TODO: More terrain segments
-	terrain_segments.resize(81);
-	float start_x = -120;
-	float start_z = -120;
-
-	// This must be a value that will divide evenly into segment_size
-	float quad_size = 1.0f;
-	float segment_size = 30.0f;
-
-	float x = start_x;
-	float z = start_z;
-
-	// Statically generate terrain segments
-	for(int i = 0; i < 9; i++){
-		for(int j = 0; j < 9; j++){
-			terrain_segments[(i * 9) + j] = new TerrainSegment(x, z,
-					segment_size, quad_size, terrain_texture, grass_sprite_texture);
-			z += segment_size;
-		}
-		z = start_z;
-		x += segment_size;
-	}
-
 	// Lighting setup
 	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
@@ -94,24 +69,19 @@ AlphaMain::AlphaMain() {
 
 	// Fog settings
 	GLfloat fogColor[4]= {0.4f,0.7f,1.0f, 1.0f};      // Fog / Sky Color
+	fog_distance_start = 200.0f;
+	fog_distance_end = 400.0f;
 	glClearColor(fogColor[0],fogColor[1],fogColor[2],fogColor[3]);
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 	glFogfv(GL_FOG_COLOR, fogColor);
 	glFogf(GL_FOG_DENSITY, 0.003f);
 	glHint(GL_FOG_HINT, GL_DONT_CARE);
-	glFogf(GL_FOG_START, 30.0f);
-	glFogf(GL_FOG_END, 400.0f);
+	glFogf(GL_FOG_START, fog_distance_start);
+	glFogf(GL_FOG_END, fog_distance_end);
 	glEnable(GL_FOG);
 
-	/* Initialise terrain segments */
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-		terrain_segments[i]->terrain_GL_obj = glGenLists(1);
-
-		glNewList(terrain_segments[i]->terrain_GL_obj, GL_COMPILE);
-
-		terrain_segments[i]->init_quads();
-		glEndList();
-	}
+	// Init terrain manager
+	terrain_manager = new TerrainManager(terrain_texture);
 
 	glEnable(GL_NORMALIZE);
 
@@ -124,10 +94,7 @@ AlphaMain::AlphaMain() {
 }
 
 AlphaMain::~AlphaMain() {
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-		delete(terrain_segments[i]);
-	}
-	terrain_segments.clear();
+	delete(terrain_manager);
 	delete(input);
 }
 
@@ -185,7 +152,7 @@ void AlphaMain::reshape(int width, int height) {
 	glViewport(0, 0, (GLint) width, (GLint) height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-1.0, 1.0, -h, h, 5.0, 400.0);
+	glFrustum(-1.0, 1.0, -h, h, 5.0, fog_distance_end);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -204,18 +171,15 @@ void AlphaMain::draw() {
 	glRotatef(camera->getPositions()->cam_z_rot, 0.0, 0.0, 1.0);
 
 	// Translation
-	glTranslatef(-camera->getPositions()->cam_x_pos,
-			-camera->getPositions()->cam_y_pos,
-			-camera->getPositions()->cam_z_pos);
+	glTranslatef(-camera->getPositions()->cam_pos.x,
+			-camera->getPositions()->cam_pos.y,
+			-camera->getPositions()->cam_pos.z);
 
 	// Draw world objects
 	glPushMatrix();
 
-	// Draw Terrain
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-		glCallList(terrain_segments[i]->terrain_GL_obj);
-	}
-
+	// Draw terrain
+	terrain_manager->draw();
 
 	glPopMatrix();
 
@@ -291,11 +255,11 @@ void AlphaMain::handle_event(SDL_Event event)
 								"cam_y_rot: %f\n"
 								"cam_z_pos: %f\n"
 								"cam_z_rot: %f\n",
-						camera->getPositions()->cam_x_pos,
+						camera->getPositions()->cam_pos.x,
 						camera->getPositions()->cam_x_rot,
-						camera->getPositions()->cam_y_pos,
+						camera->getPositions()->cam_pos.y,
 						camera->getPositions()->cam_y_rot,
-						camera->getPositions()->cam_z_pos,
+						camera->getPositions()->cam_pos.z,
 						camera->getPositions()->cam_z_rot
 						);
 						break;
@@ -354,7 +318,7 @@ void AlphaMain::run(){
 		float timePerFrame = 1000 / desiredFPS;
 
 		reshape(screen->w, screen->h);
-		camera = new ControllableCamera(screen->w, screen->h, 0.25f);
+		camera = new ControllableCamera(screen->w, screen->h, 1.0f);
 
 		// Hide cursor for mouse movement
 		SDL_ShowCursor(false);

@@ -32,11 +32,11 @@ ControllableCamera::ControllableCamera(int window_width, int window_height,
 	cam_z_speed = 0;
 
 	cam = new Positions();
-	cam->cam_x_pos = 0;
+	cam->cam_pos.x = 0;
 	cam->cam_x_rot = 0;
-	cam->cam_y_pos = 7.5;
+	cam->cam_pos.y = 7.5;
 	cam->cam_y_rot = 0;
-	cam->cam_z_pos = 50;
+	cam->cam_pos.z = 50;
 	cam->cam_z_rot = 0;
 }
 
@@ -48,9 +48,9 @@ ControllableCamera::~ControllableCamera() {
  * keyboard inputs received
  * Should be called after camera_translation_keyboard() */
 void ControllableCamera::move_camera() {
-	cam->cam_x_pos += cam_x_speed;
-	cam->cam_y_pos += cam_y_speed;
-	cam->cam_z_pos += cam_z_speed;
+	cam->cam_pos.x += cam_x_speed;
+	cam->cam_pos.y += cam_y_speed;
+	cam->cam_pos.z += cam_z_speed;
 }
 
 Positions* ControllableCamera::getPositions() {

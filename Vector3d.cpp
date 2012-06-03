@@ -66,3 +66,8 @@ Vector3D Vector3D::operator * (int param) {
 float distance(Vector3D p, Vector3D q){
 	return sqrt(pow(p.x - q.x, 2) + pow(p.y - q.y, 2) + pow(p.z - q.z, 2));
 }
+
+/** Returns the distance between two vectors */
+float distance2d(Vector3D p, Vector3D q){
+	return sqrt(pow(p.x - q.x, 2) + pow(p.z - q.z, 2));
+}

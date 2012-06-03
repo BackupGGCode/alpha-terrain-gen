@@ -20,10 +20,11 @@
 #define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 4
 
 TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size,
-		GLuint terrain_texture,
-		GLuint grass_sprite_texture) {
+		GLuint terrain_texture) {
+
+	drawing = true;
+
 	this->terrain_texture_id = terrain_texture;
-	this->grass_sprite_texture_id = grass_sprite_texture;
 
 	quad_count_width = (int)(segment_size / quad_size);
 	quad_count_height = (int)(segment_size / quad_size);
@@ -39,7 +40,7 @@ TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_
 		for(unsigned int j = 0; j < quad_arrays[i].size(); j++){
 			// - 1 is taken from the i and j index values so that the imaginary quads are rendered outside of the specified
 			// location
-			quad_arrays[i][j] = calculateNewQuad(x + (quad_size * (i - 1)), z + (quad_size * (j - 1)), quad_size);
+			quad_arrays[i][j] = calculate_new_quad(x + (quad_size * (i - 1)), z + (quad_size * (j - 1)), quad_size);
 		}
 	}
 
@@ -65,7 +66,7 @@ TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_
 	}
 #endif
 	// Set the centre vector for the segment
-	centre = Vector3D(x + segment_size / 2, 0.0, z + segment_size / 2);
+	centre = Vector3D(x + (segment_size / 2), 0.0, z + (segment_size / 2));
 }
 
 TerrainSegment::~TerrainSegment() {
@@ -135,7 +136,7 @@ void TerrainSegment::init_quads(){
 #define TERRAIN_MULTIPLIER 10
 
 /** Calculates a new quad given the x and z coordinate, and the size of the quad. */
-Quad* TerrainSegment::calculateNewQuad(float x, float z, float size){
+Quad* TerrainSegment::calculate_new_quad(float x, float z, float size){
 	Vector3D* vector1 = new Vector3D(x,brownianValue(x,z,3) * TERRAIN_MULTIPLIER, z);
 	Vector3D* vector2 = new Vector3D(x,brownianValue(x,z + size,3) * TERRAIN_MULTIPLIER, z + size);
 	Vector3D* vector3 = new Vector3D(x + size, brownianValue(x + size,z + size,3)  * TERRAIN_MULTIPLIER, z + size);
@@ -143,4 +144,16 @@ Quad* TerrainSegment::calculateNewQuad(float x, float z, float size){
 
 	Quad *quad = new Quad(vector1, vector2, vector3, vector4);
 	return quad;
+}
+
+void TerrainSegment::set_draw(bool drawing){
+	 this->drawing = drawing;
+}
+
+bool TerrainSegment::get_draw(){
+	return drawing;
+}
+
+Vector3D TerrainSegment::get_centre(){
+	return centre;
 }
