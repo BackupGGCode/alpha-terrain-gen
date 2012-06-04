@@ -113,14 +113,14 @@ void TerrainSegment::init_quads(){
 	initialized = true;
 }
 
-#define TERRAIN_MULTIPLIER 10
+#define TERRAIN_MULTIPLIER 1
 
 /** Calculates a new quad given the x and z coordinate, and the size of the quad. */
 Quad* TerrainSegment::calculate_new_quad(float x, float z, float size){
-	Vector3D* vector1 = new Vector3D(x,brownianValue(x,z,3) * TERRAIN_MULTIPLIER, z);
-	Vector3D* vector2 = new Vector3D(x,brownianValue(x,z + size,3) * TERRAIN_MULTIPLIER, z + size);
-	Vector3D* vector3 = new Vector3D(x + size, brownianValue(x + size,z + size,3)  * TERRAIN_MULTIPLIER, z + size);
-	Vector3D* vector4 = new Vector3D(x + size, brownianValue(x + size,z,3) * TERRAIN_MULTIPLIER, z);
+	Vector3D* vector1 = new Vector3D(x,calculate_y_value(x,z) * TERRAIN_MULTIPLIER, z);
+	Vector3D* vector2 = new Vector3D(x,calculate_y_value(x,z + size) * TERRAIN_MULTIPLIER, z + size);
+	Vector3D* vector3 = new Vector3D(x + size, calculate_y_value(x + size,z + size)  * TERRAIN_MULTIPLIER, z + size);
+	Vector3D* vector4 = new Vector3D(x + size, calculate_y_value(x + size,z) * TERRAIN_MULTIPLIER, z);
 
 	Quad *quad = new Quad(vector1, vector2, vector3, vector4);
 	return quad;

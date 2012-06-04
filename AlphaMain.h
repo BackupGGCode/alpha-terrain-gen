@@ -16,6 +16,7 @@
 
 // GL includes
 #include <GL/gl.h>
+#include <GL/freeglut.h>
 
 // SDL includes
 #include "SDL.h"

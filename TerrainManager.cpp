@@ -16,7 +16,7 @@
 #include "SDL_thread.h"
 
 // How many segments (width) do we want to try and draw?
-#define SEGMENT_DRAW_COUNT 8
+#define SEGMENT_DRAW_COUNT 16
 
 // Semaphore for the draw table
 SDL_sem *draw_table_lock = NULL;
@@ -105,6 +105,7 @@ void TerrainManager::repopulate_terrain() {
 	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
 		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
 			if (terrain_segments[(i * world_width) + j] == NULL) {
+				SDL_WM_SetCaption("Alpha - Loading new Terrain...", "alpha");
 				terrain_segments[(i * world_width) + j] = new TerrainSegment(x,
 						z, segment_size, quad_size, terrain_texture);
 			}
@@ -113,8 +114,8 @@ void TerrainManager::repopulate_terrain() {
 		z = start_z;
 		x += segment_size;
 	}
-
 	erase_distant_segments();
+	SDL_WM_SetCaption("Alpha", "alpha");
 }
 
 /** Initializes and compiles any uninitialized terrain segments

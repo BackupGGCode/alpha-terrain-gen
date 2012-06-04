@@ -14,6 +14,6 @@
 #ifndef HEIGHTGEN_H_
 #define HEIGHTGEN_H_
 
-float brownianValue(float x, float y, int octavesCount);
+float calculate_y_value(float x, float y);
 
 #endif /* HEIGHTGEN_H_ */

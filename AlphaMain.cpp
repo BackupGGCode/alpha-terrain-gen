@@ -94,7 +94,7 @@ AlphaMain::AlphaMain() {
 
 	// Set class fog variables
 	fog_distance_start = 200.0f;
-	fog_distance_end = 400.0f;
+	fog_distance_end = 600.0f;
 
 	glClearColor(fogColor[0],fogColor[1],fogColor[2],fogColor[3]);
 	glFogi(GL_FOG_MODE, GL_LINEAR);
