@@ -21,10 +21,12 @@ public:
 
 	void normalise();
 
+	// X Y and Z coordinates
 	GLfloat x;
 	GLfloat y;
 	GLfloat z;
 
+	// Overloaded operators
 	Vector3D operator + (Vector3D);
 	Vector3D operator - (Vector3D);
 	Vector3D operator / (float);

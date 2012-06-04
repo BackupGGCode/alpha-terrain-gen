@@ -14,7 +14,6 @@
 #include "Vector3D.h"
 #include <vector>
 #include "Colour.h"
-#include "GrassSprite.h"
 
 class Quad {
 public:
@@ -42,23 +41,12 @@ public:
 
 
 private:
-
-	enum eMaterial_Type{
-		GRASS,
-		SAND,
-		ROCK
-	};
-
 	bool using_vertex_normals;
 	Vector3D* vertex_data[4];
 	Vector3D* vertex_normals[4];
 	Vector3D* surface_normal;
 
 	Colour* vertex_materials[4];
-
-	eMaterial_Type material_type;
-
-	std::vector<GrassSprite*> grass;
 
 	Colour* get_material(Vector3D* vertex, Vector3D* normal);
     void calculate_surface_normals();

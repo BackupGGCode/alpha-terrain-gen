@@ -19,6 +19,16 @@
 
 #define PI 3.1415926
 
+/** Creates a new controllable camera and sets starting values
+ * Arguments
+ * -----------------------------------------------------------------
+ * int window_width - width of the screen
+ * int window_height - height of the screen
+ *
+ * Size of the screen is required to reset the mouse to the middle of the screen.
+ *
+ * GLfloat movement_speed - set the movement speed of the camera
+ */
 ControllableCamera::ControllableCamera(int window_width, int window_height,
 		GLfloat movement_speed) {
 
@@ -57,6 +67,9 @@ Positions* ControllableCamera::getPositions() {
 	return cam;
 }
 
+/** Updates the screen size
+ * Should be called if the screen changes size.
+ */
 void ControllableCamera::screen_resize(int new_width, int new_height) {
 	window_centre_x = new_width / 2;
 	window_centre_y = new_height / 2;
@@ -158,6 +171,15 @@ void ControllableCamera::camera_translation_keyboard(Inputs* input) {
 	}
 }
 
+/** Camera movement based on mouse movement.
+ * Arguments
+ * ----------------------------------------------------------------------------
+ * int mouse_x movement of the mouse in the x direction
+ * int mouse_y movement of the mosue in the y direction
+ *
+ * This is usually the mouse movement from the center of the screen,
+ * as after every call th mouse is reset to the center.
+ */
 void ControllableCamera::camera_rotation_mouse(int mouse_x, int mouse_y) {
 	GLfloat vertMouseSensitivity = 10.0f;
 	GLfloat horizMouseSensitivity = 10.0f;

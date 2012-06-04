@@ -1,10 +1,10 @@
 /*
  * detrand.h
  *
- * Determinstic Random Number Generator
+ * Deterministic Random Number Generator
  *
  *  Created on: May 24, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #ifndef DETRAND_H_

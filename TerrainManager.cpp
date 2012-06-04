@@ -1,23 +1,45 @@
 /*
  * TerrainManager.cpp
  *
+ * Manager for the Terrain.
+ *
+ * Dynamically generates new terrain segments and removes existing distant
+ * segments.
+ *
  *  Created on: Jun 3, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #include "TerrainManager.h"
 #include <Math.h>
+#include "SDL.h"
+#include "SDL_thread.h"
 
+// How many segments (width) do we want to try and draw?
 #define SEGMENT_DRAW_COUNT 8
 
+// Semaphore for the draw table
 SDL_sem *draw_table_lock = NULL;
 
+/** Constructor for terrain managers
+ * ----------------------------------------------------------------------------
+ * Arguments:
+ * GLuint terrain_texture - ID for the texture for the terrain
+ * GLfloat segment_size - Size of the terrain segment in real-size coordinates
+ * ControllableCamera* camera - The camera within the world, used to determine which
+ * 								terrain segments should be in memory.
+ * 	unsigned int world_width  - The width of the world in terrain segments.
+ * 								The world is assumed to be square, so this value is also
+ * 								used as the height of the world.
+ */
 TerrainManager::TerrainManager(GLuint terrain_texture, GLfloat segment_size,
 		ControllableCamera* camera, unsigned int world_width) {
 
+	// Set values locally
 	this->world_width = world_width;
 	this->camera = camera;
 
+	// Initialize array
 	terrain_segments = new TerrainSegment*[world_width * world_width];
 
 	// Draw Table
@@ -50,6 +72,13 @@ TerrainManager::~TerrainManager() {
 	delete (terrain_segments);
 }
 
+/** Takes a value and returns the coordinate that would be correct for starting a
+ * new terrain segment.
+ * e.g. removes the remainder from dividing by the segment size.
+ * Arguments
+ * -----------------------------------------------
+ * float x - input value
+ */
 float TerrainManager::get_nearest_segment_start(float x) {
 	return x - (fmod(x, segment_size));
 }
@@ -88,7 +117,10 @@ void TerrainManager::repopulate_terrain() {
 	erase_distant_segments();
 }
 
-void TerrainManager::initialize() {
+/** Initializes and compiles any uninitialized terrain segments
+ * for use by OpenGL.
+ */
+void TerrainManager::initialize_new_terrain_segments() {
 	float start_x = get_nearest_segment_start(
 			camera->getPositions()->cam_pos.x
 					- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
@@ -102,7 +134,12 @@ void TerrainManager::initialize() {
 	unsigned int start_i = (int) translate_to_index_coordinates(x);
 	unsigned int start_j = (int) translate_to_index_coordinates(z);
 
+	// Lock the draw table
 	SDL_SemWait(draw_table_lock);
+	// The draw table stores information on which segments are still being
+	// actively drawn by the program.
+	// Anything that is set to false by the time the semaphore is released
+	// can be removed from memory
 	for(unsigned int i = 0; i < world_width * world_width; i++){
 		draw_table[i] = false;
 	}
@@ -124,13 +161,20 @@ void TerrainManager::initialize() {
 			}
 		}
 	}
+	// Unlock the draw table
 	SDL_SemPost(draw_table_lock);
 }
 
+/** Erases any distant segment in memory.
+ * This is determined by looking at which segments are set as
+ * false in the draw table.
+ */
 void TerrainManager::erase_distant_segments() {
 	SDL_SemWait(draw_table_lock);
 	for (unsigned int i = 0; i < world_width; i++) {
 		for (unsigned int j = 0; j < world_width; j++) {
+			// If the draw table entry is false,
+			// then delete the terrain segment
 			if(!draw_table[(i * world_width) + j]){
 				delete(terrain_segments[(i * world_width) + j]);
 				terrain_segments[(i * world_width) + j] = NULL;
@@ -140,12 +184,24 @@ void TerrainManager::erase_distant_segments() {
 	SDL_SemPost(draw_table_lock);
 }
 
+/** Turns a real world coordinate into the index into the
+ * terrain_segments array. Based on the size of the terrain segments.
+ *
+ * Arguments
+ * -------------------------------------------------------
+ * float x : input coordinate value
+ */
 float TerrainManager::translate_to_index_coordinates(float x) {
 	x -= array_start_value;
 	x /= segment_size;
 	return x;
 }
 
+/**
+ * Draws the terrain.
+ * Assumes all of the terrain segments that should be drawn have
+ * already been initialized.
+ */
 void TerrainManager::draw() {
 	float start_x = get_nearest_segment_start(
 			camera->getPositions()->cam_pos.x

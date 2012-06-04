@@ -4,7 +4,8 @@
  * Class for a section of terrain.
  * Can be specified to an abritrary number of quads, with an arbitrary quad size.
  *
- * Generates the terrain based on the height map generation algorithm.
+ * Generates the terrain based on the height map generation algorithm,
+ * found in the HeightGen files.
  *
  *  Created on: May 28, 2012
  *      Author: Simon Davies
@@ -16,18 +17,31 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// TODO: Should work with 2, 4 temp fix
+// TODO: Should work with 2, 4 temporary fix
 #define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 4
 
 TerrainSegment::TerrainSegment(){
 }
 
+/**
+ * Creates a new TerrainSegment object.
+ *
+ * Arguments
+ * ------------------------------------------------------------------
+ * float x - starting x coordinate of the new terrain segment
+ * float z - starting z coordinate of the new terrain segment
+ * float segment_size - the size of the segment in world size
+ * float quad_size - the size of the quads that make up the terrain in world size
+ * GLuint terrain_texture - the int ID of the texture used on the terrain
+ */
 TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size,
 		GLuint terrain_texture) {
-
+	// Set initialize variable
 	initialized = false;
 	this->terrain_texture_id = terrain_texture;
 
+	// Determine how many quads are required to generate a terrain
+	// segment of the given segment_size
 	quad_count_width = (int)(segment_size / quad_size);
 	quad_count_height = (int)(segment_size / quad_size);
 
@@ -58,15 +72,6 @@ TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_
 		}
 	}
 
-
-#ifdef GRASS_SPRITES
-	// Generate grass sprites
-	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
-		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
-			quad_arrays[i][j]->generate_grass_sprites();
-		}
-	}
-#endif
 	// Set the centre vector for the segment
 	centre = Vector3D(x + (segment_size / 2), 0.0, z + (segment_size / 2));
 }
@@ -105,34 +110,6 @@ void TerrainSegment::init_quads(){
 	}
 	glEnd();
 
-	// Transparent grass textures
-
-	// Disable updating the occlusion data
-#ifdef GRASS_SPRITES
-	glDepthMask(GL_FALSE);
-	glDisable(GL_CULL_FACE);
-	// Enable blending
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glShadeModel(GL_SMOOTH);
-
-	glBindTexture (GL_TEXTURE_2D, grass_sprite_texture_id);
-
-	glBegin(GL_QUADS);
-
-	for(unsigned int i = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i < quad_arrays.size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; i++){
-		for(unsigned int j = EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j < quad_arrays[i].size() - EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC / 2; j++){
-			quad_arrays[i][j]->init_grass();
-		}
-	}
-
-	glEnd();
-
-	glDisable(GL_BLEND);
-	glEnable(GL_CULL_FACE);
-	glDepthMask(GL_TRUE);
-#endif
 	initialized = true;
 }
 
@@ -149,10 +126,18 @@ Quad* TerrainSegment::calculate_new_quad(float x, float z, float size){
 	return quad;
 }
 
+/** Returns a vector that represents the centre of the segment in
+ * world space.
+ */
 Vector3D TerrainSegment::get_centre(){
 	return centre;
 }
 
+/** Returns whether this terrain segment has been initialized
+ * using init_quads().
+ * If this returns false, then this terrain segment is cannot
+ * be yet be drawn.
+ */
 bool TerrainSegment::get_initialized(){
 	return initialized;
 }

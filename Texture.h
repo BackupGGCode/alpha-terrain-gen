@@ -1,6 +1,8 @@
 /*
  * Texture.h
  *
+ * Texture loading function
+ *
  *  Created on: May 31, 2012
  *      Author: Simon Davies
  */

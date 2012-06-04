@@ -1,8 +1,13 @@
 /*
  * TerrainManager.h
  *
+ * Manager for the Terrain.
+ *
+ * Dynamically generates new terrain segments and removes existing distant
+ * segments.
+ *
  *  Created on: Jun 3, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #ifndef TERRAINMANAGER_H_
@@ -54,7 +59,7 @@ public:
 	virtual ~TerrainManager();
 	void draw();
 	void repopulate_terrain();
-	void initialize();
+	void initialize_new_terrain_segments();
 };
 
 #endif /* TERRAINMANAGER_H_ */

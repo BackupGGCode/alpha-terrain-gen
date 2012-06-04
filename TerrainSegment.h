@@ -1,5 +1,4 @@
-#include "TerrainManager.h"/*
- * TerrainSegment.h
+/* TerrainSegment.h
  *
  * Class for a section of terrain.
  * Can be specified to an abritrary number of quads, with an arbitrary quad size.
@@ -19,14 +18,22 @@
 
 class TerrainSegment {
 private:
+	// Two dimensional array of Quad objects which make
+	// up the terrain
 	std::vector <std::vector<Quad*> > quad_arrays;
+
+	// Texture ID for the terrain texture
 	GLuint terrain_texture_id;
 
+	// Number of quads in width and height directions
 	int quad_count_width;
 	int quad_count_height;
 
+	// Vector that represents the centre of the terrain segment
 	Vector3D centre;
 
+	// Whather this terrain segment has been initialized and
+	// is ready to be drawn using OpenGL yet
 	bool initialized;
 
 public:

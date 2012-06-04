@@ -13,13 +13,18 @@
 Vector3D::Vector3D() {
 }
 
+/** Create a new vector object based on an existing one */
 Vector3D::Vector3D(const Vector3D& param) {
 	this->x = param.x;
 	this->y = param.y;
 	this->z = param.z;
 }
 
-
+/** Create a new Vector
+ * Arguments
+ * ----
+ * GLfloat x y z coordinates
+ */
 Vector3D::Vector3D(GLfloat x, GLfloat y, GLfloat z) {
 	this->x = x;
 	this->y = y;
@@ -29,6 +34,7 @@ Vector3D::Vector3D(GLfloat x, GLfloat y, GLfloat z) {
 Vector3D::~Vector3D() {
 }
 
+/** Turn a vector into a unit vector */
 void Vector3D::normalise(){
 	float norm = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 	x = x / norm;
@@ -36,10 +42,12 @@ void Vector3D::normalise(){
 	z = z / norm;
 }
 
+/** Vector addition */
 Vector3D Vector3D::operator + (Vector3D param) {
 	return Vector3D(this->x + param.x, this->y + param.y,this->z + param.z);
 }
 
+/** Vector subtraction */
 Vector3D Vector3D::operator - (Vector3D param) {
 	return Vector3D(this->x - param.x, this->y - param.y,this->z - param.z);
 }
@@ -67,7 +75,8 @@ float distance(Vector3D p, Vector3D q){
 	return sqrt(pow(p.x - q.x, 2) + pow(p.y - q.y, 2) + pow(p.z - q.z, 2));
 }
 
-/** Returns the distance between two vectors */
+/** Returns the distance between two vectors in two dimensions,
+ * the Y component is ignored for this calculation. */
 float distance2d(Vector3D p, Vector3D q){
 	return sqrt(pow(p.x - q.x, 2) + pow(p.z - q.z, 2));
 }

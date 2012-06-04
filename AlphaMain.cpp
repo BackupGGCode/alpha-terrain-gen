@@ -1,6 +1,12 @@
 /*
  * AlphaMain.cpp
  *
+ * The MainClass that is the first class to be initialized.
+ * Contains the setup for SDL and OpenGL and holds the Terrain Generation Manager
+ * in the form of the TerrainManager instance.
+ *
+ * This class is the basis of the program and pretty much everything comes from here.
+ *
  *  Created on: May 30, 2012
  *      Author: Simon Davies
  */
@@ -15,9 +21,18 @@
 #include <algorithm>
 
 // Static declarations
+// These are set as static so they are accessible by the secondary
+// terrain generation thread
 bool AlphaMain::quit_flag;
 TerrainManager* AlphaMain::terrain_manager;
 
+/** Constructor / Initialialization of the AlphaMain class.
+ * Sets up the SDL screen, and the SDL environment, as well as configuring
+ * OpenGL for use.
+ *
+ * Sets up the ControllableCamera and Input structs, and most importantly creates
+ * a new terrain manager that handles all of the terrain generation.
+ */
 AlphaMain::AlphaMain() {
 	// Thread
 	terrain_gen_thread = NULL;
@@ -35,7 +50,7 @@ AlphaMain::AlphaMain() {
 
 	GLuint terrain_texture;
 	if(!load_texture("dirt.bmp", &terrain_texture)){
-		texture_mapping = false;
+		texture_mapping_toggle = false;
 	}
 
 	T0 = 0;
@@ -76,8 +91,11 @@ AlphaMain::AlphaMain() {
 
 	// Fog settings
 	GLfloat fogColor[4]= {0.4f,0.7f,1.0f, 1.0f};      // Fog / Sky Color
+
+	// Set class fog variables
 	fog_distance_start = 200.0f;
 	fog_distance_end = 400.0f;
+
 	glClearColor(fogColor[0],fogColor[1],fogColor[2],fogColor[3]);
 	glFogi(GL_FOG_MODE, GL_LINEAR);
 	glFogfv(GL_FOG_COLOR, fogColor);
@@ -96,13 +114,14 @@ AlphaMain::AlphaMain() {
 	glEnable(GL_NORMALIZE);
 
 	// set toggle parameters
-	fog_enabled = true;
-	texture_mapping = true;
+	fog_toggle = true;
+	texture_mapping_toggle = true;
 
-	wireframe = false;
-	window_active = true;
+	wireframe_toggle = false;
+	is_window_active = true;
 }
 
+/** AlphaMain destructor */
 AlphaMain::~AlphaMain() {
 	delete(AlphaMain::terrain_manager);
 	delete(input);
@@ -113,6 +132,9 @@ AlphaMain::~AlphaMain() {
  *
  * Updates the Input struct which is later used by the CameraController to determine
  * where to move the camera.
+ * Arguments:
+ * ----------------------------------------------------------------------------
+ * SDL_Event event reported by SDL
  */
 void AlphaMain::check_for_movement_inputs(SDL_Event event) {
 	switch (event.type) {
@@ -155,20 +177,33 @@ void AlphaMain::check_for_movement_inputs(SDL_Event event) {
 	}
 }
 
-/** Reshapes the window based on the screen height and width */
+/** Reshapes the window based on the screen height and width.
+ * Generates a new view model frustrum based on the new screen height and width,
+ * and culls the screen based on the fog distance.
+ * Arguments:
+ * ----------------------------------------------------------------------------
+ * int new screen width
+ * int new screen height
+ */
 void AlphaMain::reshape(int width, int height) {
 	GLfloat h = (GLfloat) height / (GLfloat) width;
 
+	// reset viewport
 	glViewport(0, 0, (GLint) width, (GLint) height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
+	// distant object culling is set here, by the 6th argument
 	glFrustum(-1.0, 1.0, -h, h, 5.0, fog_distance_end);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
 
-/** Draws the scene */
+/** Draws the scene to the screen.
+ * First translates to the (opposite of) camera position then renders the scene.
+ * Arguments:
+ * ----------------------------------------------------------------------------
+ */
 void AlphaMain::draw() {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -212,6 +247,9 @@ void AlphaMain::draw() {
 
 /** Handles SDL_events, such as when the screen is resized,
  * mouse movements and keyboard inputs.
+ * Arguments:
+ * ----------------------------------------------------------------------------
+ * SDL_Event event - The event to be handled
  */
 void AlphaMain::handle_event(SDL_Event event)
 {
@@ -226,7 +264,7 @@ void AlphaMain::handle_event(SDL_Event event)
 						// Camera needs to be informed of new screen size
 						camera->screen_resize(screen->w, screen->h);
 					} else {
-						/* Uh oh, we couldn't set the new video mode?? */;
+						// Error setting screen
 					}
 					break;
 
@@ -238,12 +276,12 @@ void AlphaMain::handle_event(SDL_Event event)
 					if (event.active.state & SDL_APPINPUTFOCUS) {
 						//If the application is no longer active
 						if (event.active.gain == 0) {
-							window_active = false;
+							is_window_active = false;
 							// Turn on cursor and let it escape the screen space
 							SDL_ShowCursor(true);
 							SDL_WM_GrabInput(SDL_GRAB_OFF);
 						} else {
-							window_active = true;
+							is_window_active = true;
 							// Hide cursor for mouse movement
 							SDL_ShowCursor(false);
 							// Keep mouse within confines of the window
@@ -255,6 +293,8 @@ void AlphaMain::handle_event(SDL_Event event)
 				case SDL_KEYDOWN:
 					switch (event.key.keysym.sym) {
 					case SDLK_ESCAPE:
+						// User has hit escape,
+						// quits out of the program
 						this->quit_flag = 1;
 						break;
 					case SDLK_c:
@@ -275,42 +315,44 @@ void AlphaMain::handle_event(SDL_Event event)
 						);
 						break;
 					case SDLK_f:
-						if(!fog_enabled){
+						// F key toggles fog
+						if(!fog_toggle){
 							glEnable(GL_FOG);
-							fog_enabled = true;
+							fog_toggle = true;
 						}
 						else{
 							glDisable(GL_FOG);
-							fog_enabled = false;
+							fog_toggle = false;
 						}
 						break;
 					case SDLK_z:
-						if (wireframe) {
+						// Z key toggles Wireframe mode
+						if (wireframe_toggle) {
 							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-							wireframe = false;
+							wireframe_toggle = false;
 						} else {
 							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-							wireframe = true;
+							wireframe_toggle = true;
 						}
 						break;
 					case SDLK_t:
-						if (!texture_mapping) {
+						// T key toggles texture mapping
+						if (!texture_mapping_toggle) {
 							glEnable(GL_TEXTURE_2D);
-							texture_mapping = true;
+							texture_mapping_toggle = true;
 						} else {
 							glDisable(GL_TEXTURE_2D);
-							texture_mapping = false;
+							texture_mapping_toggle = false;
 						}
-						break;
-					case SDLK_r:
-						AlphaMain::terrain_manager->repopulate_terrain();
 						break;
 					default:
 						break;
 					}
 					break;
 				case SDL_MOUSEMOTION:
-					if(window_active){
+					// Mouse movement is tracked and sent to the the camera
+					// class, and then rotates the camera appropriately.
+					if(is_window_active){
 						camera->camera_rotation_mouse(event.motion.x, event.motion.y);
 					}
 					break;
@@ -339,8 +381,11 @@ void AlphaMain::run(){
 		// Keep mouse within confines of the window
 		SDL_WM_GrabInput(SDL_GRAB_ON);
 
+		// Create the a new thread that will handle the terrain generation process
+		// so that the main drawing thread is not interrupted by terrain calculation
 		terrain_gen_thread = SDL_CreateThread(terrain_regeneration, NULL);
 
+		// Run loop
 		while (!AlphaMain::quit_flag) {
 			SDL_Event event;
 
@@ -349,11 +394,15 @@ void AlphaMain::run(){
 			}
 
 			// Check redraw rate
+			// Screen is not drawn unless enough time has passed since the
+			// last pass to maintain 60 FPS.
 			if (SDL_GetTicks() > lastDrawTime + timePerFrame) {
-				AlphaMain::terrain_manager->initialize();
+				// Initializes any uninitialized terrain segments
+				AlphaMain::terrain_manager->initialize_new_terrain_segments();
 				draw();
 				// Camera movement is not activated unless the screen is in OS focus
-				if(window_active){
+				if(is_window_active){
+					// Move camera based on the current state of inputs
 					camera->camera_translation_keyboard(input);
 					camera->move_camera();
 				}
@@ -365,6 +414,11 @@ void AlphaMain::run(){
 		}
 }
 
+/* Static method for doing new terrain regeneration.
+ * Used by a seperate second thread, hence the need for this to be Static.
+ * Arguments:
+ * ----------------------------------------------------------------------------
+ */
 int AlphaMain::terrain_regeneration(void* data){
 	while(!AlphaMain::quit_flag){
 		AlphaMain::terrain_manager->repopulate_terrain();

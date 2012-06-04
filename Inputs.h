@@ -1,8 +1,10 @@
 /*
  * Inputs.h
  *
+ * Keyboard input struct, used for camera movement.
+ *
  *  Created on: May 29, 2012
- *      Author: Simon
+ *      Author: Simon Davies
  */
 
 #ifndef INPUTS_H_

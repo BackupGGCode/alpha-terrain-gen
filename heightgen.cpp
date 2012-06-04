@@ -5,6 +5,8 @@
  *
  * Uses Fractional Brownian Motion algorithm to generate
  * values that can be used for a heightmap.
+ *
+ * Author: Simon Davies
  */
 
 

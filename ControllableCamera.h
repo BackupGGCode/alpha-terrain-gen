@@ -41,10 +41,19 @@ private:
 public:
 	ControllableCamera(int window_width, int window_height, GLfloat movement_speed);
 	virtual ~ControllableCamera();
+	// Keyboard camera movement
 	void camera_translation_keyboard(Inputs* input);
+
+	// Mouse rotation camera
 	void camera_rotation_mouse(int mouse_x, int mouse_y);
+
+	// Update the camera position
 	void move_camera();
+
+	// Return the position information of the camera
 	Positions* getPositions();
+
+	// Screen Resize - should be called if the screen changes size
 	void screen_resize(int new_width, int new_height);
 };
 

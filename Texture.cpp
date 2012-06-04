@@ -1,6 +1,8 @@
 /*
  * Texture.cpp
  *
+ * Texture loading function.
+ *
  *  Created on: May 31, 2012
  *      Author: Simon Davies
  */
@@ -9,12 +11,24 @@
 
 /** Loads the texture given by file_name,
  * and stores the OpenGL handle to that texture in the handle variable.
+ *
+ * Uses SDL and only works with 24-bit or 32-bit (alpha) .bmp files
+ *
+ * Arguments
+ * ------------------------------------------------------------------
+ * char* file_name string for the file to load
+ * GLuint* handle in which the final texture will be referenced by when
+ * 			drawing with the texture
  */
 bool load_texture(const char* file_name, GLuint* handle) {
 	SDL_Surface *surface; // This surface will tell us the details of the image
+
+	// RGB or RGBA
 	GLenum texture_format;
+
 	GLint num_colours;
 
+	// Load a BMP file with SDL
 	if ((surface = SDL_LoadBMP(file_name))) {
 
 		// Check that the image's width is a power of 2
