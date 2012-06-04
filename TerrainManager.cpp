@@ -6,9 +6,9 @@
  */
 
 #include "TerrainManager.h"
+#include <Math.h>
 
-#define SEGMENT_COUNT_WIDTH 9.0f
-#define SEGMENT_COUNT_TOTAL SEGMENT_COUNT_WIDTH * SEGMENT_COUNT_WIDTH
+#define SEGMENT_DRAW_COUNT 9
 
 // TODO: Limiting scope
 // I can make things happen by having an array of TerrainSegments which only get
@@ -16,41 +16,67 @@
 // Might make the whole thing more manageable?
 
 TerrainManager::TerrainManager(GLuint terrain_texture, GLfloat segment_size,
-		ControllableCamera* camera){
+		ControllableCamera* camera, unsigned int world_width) {
 
+	this->world_width = world_width;
 	this->camera = camera;
-	terrain_segments.resize(SEGMENT_COUNT_TOTAL);
+	terrain_segments = new TerrainSegment*[world_width * world_width];
 
+	// Set all segments to NULL
+	for (unsigned int i = 0; i < world_width; i++) {
+		for (unsigned int j = 0; j < world_width; j++) {
+			terrain_segments[i * world_width + j] = NULL;
+		}
+	}
+
+	// Set other variables
+	// Terrain texture bitmap ID
 	this->terrain_texture = terrain_texture;
+
+	// Size of each segment variable
 	this->segment_size = segment_size;
 
-	float start_x = camera->getPositions()->cam_pos.x - ((this->segment_size * SEGMENT_COUNT_WIDTH) / 2);
-	float start_z = camera->getPositions()->cam_pos.z - ((this->segment_size * SEGMENT_COUNT_WIDTH) / 2);
+	array_start_value = 0 - (world_width / 2 * segment_size);
+
+	float start_x = get_nearest_segment_start(camera->getPositions()->cam_pos.x
+			- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
+	float start_z = get_nearest_segment_start(camera->getPositions()->cam_pos.z
+			- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
 
 	repopulate_terrain(start_x, start_z);
 }
 
 TerrainManager::~TerrainManager() {
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-		delete(terrain_segments[i]);
+	for (unsigned int i = 0; i < world_width; i++) {
+		for (unsigned int j = 0; j < world_width; j++) {
+			delete (terrain_segments[i * world_width + j]);
+		}
 	}
-	terrain_segments.clear();
+	delete (terrain_segments);
 }
 
-void TerrainManager::repopulate_terrain(float start_x, float start_z){
-	// TODO:
+float TerrainManager::get_nearest_segment_start(float x){
+	return x - (fmod(x, segment_size));
+}
+
+/** Repopulates the terrain around the camera location */
+void TerrainManager::repopulate_terrain(float start_x, float start_z) {
 	// This must be a value that will divide evenly into segment_size
-	float quad_size = 1.5f;
+	float quad_size = 3.0f;
 
 	float x = start_x;
 	float z = start_z;
 
+	int start_i = (int) translate_to_index_coordinates(x);
+	int start_j = (int) translate_to_index_coordinates(z);
+
 	// Statically generate terrain segments
-	for(int i = 0; i < 9; i++){
-		for(int j = 0; j < 9; j++){
-			if(terrain_segments[(i * 9) + j] == NULL){
-				terrain_segments[(i * 9) + j] = new TerrainSegment(x, z,
-						segment_size, quad_size, terrain_texture);
+	// TODO: Change the magic numbers
+	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
+		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
+			if (terrain_segments[(i * world_width) + j] == NULL) {
+				terrain_segments[(i * world_width) + j] = new TerrainSegment(x,
+						z, segment_size, quad_size, terrain_texture);
 			}
 			z += segment_size;
 		}
@@ -59,75 +85,51 @@ void TerrainManager::repopulate_terrain(float start_x, float start_z){
 	}
 
 	/* Initialise terrain segments */
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-		terrain_segments[i]->terrain_GL_obj = glGenLists(1);
+	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
+		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
+			TerrainSegment* current_segment = terrain_segments[(i * world_width)
+					+ j];
 
-		glNewList(terrain_segments[i]->terrain_GL_obj, GL_COMPILE);
-
-		terrain_segments[i]->init_quads();
-		glEndList();
-	}
-}
-
-/** Checks for all distant segments that are no longer visible
- * and removes them from the game world
- */
-
-// TODO: this is slow as balls and doesn't really help anyone
-void TerrainManager::check_for_distant_segments(){
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-
-		float distance = distance2d(terrain_segments[i]->get_centre(),
-				camera->getPositions()->cam_pos);
-
-		float target = segment_size * (SEGMENT_COUNT_WIDTH / 2);
-
-//		printf("Distance %f - Target %f \n", distance, target);
-
-
-		if(distance2d(terrain_segments[i]->get_centre(),
-				camera->getPositions()->cam_pos) > segment_size * (SEGMENT_COUNT_WIDTH)){
-			delete terrain_segments[i];
-			terrain_segments[i] = NULL;
-			printf("KILL!\n");
+			current_segment->terrain_GL_obj = glGenLists(1);
+			glNewList(current_segment->terrain_GL_obj, GL_COMPILE);
+			current_segment->init_quads();
+			glEndList();
 		}
 	}
-	float start_x = camera->getPositions()->cam_pos.x - ((this->segment_size * SEGMENT_COUNT_WIDTH));
-	float start_z = camera->getPositions()->cam_pos.z - ((this->segment_size * SEGMENT_COUNT_WIDTH));
+}
+
+void TerrainManager::reset() {
+	float start_x = get_nearest_segment_start(camera->getPositions()->cam_pos.x
+			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
+	float start_z = get_nearest_segment_start(camera->getPositions()->cam_pos.z
+			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
 
 	repopulate_terrain(start_x, start_z);
 }
 
+float TerrainManager::translate_to_index_coordinates(float x) {
+	x -= array_start_value;
+	x /= segment_size;
+	return x;
+}
 
-void TerrainManager::draw(){
+void TerrainManager::draw() {
+	float start_x = get_nearest_segment_start(camera->getPositions()->cam_pos.x
+			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
+	float start_z = get_nearest_segment_start(camera->getPositions()->cam_pos.z
+			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
+
+	int start_i = (int) translate_to_index_coordinates(start_x);
+	int start_j = (int) translate_to_index_coordinates(start_z);
 	// Draw Terrain
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-		glCallList(terrain_segments[i]->terrain_GL_obj);
+	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
+		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
+			TerrainSegment* current_segment = terrain_segments[(i * world_width)
+					+ j];
+			if (current_segment != NULL) {
+				glCallList(current_segment->terrain_GL_obj);
+			}
+		}
 	}
 }
-
-void TerrainManager::reset(){
-	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-		delete terrain_segments[i];
-		terrain_segments[i] = NULL;
-	}
-	float start_x = camera->getPositions()->cam_pos.x - ((this->segment_size * SEGMENT_COUNT_WIDTH));
-	float start_z = camera->getPositions()->cam_pos.z - ((this->segment_size * SEGMENT_COUNT_WIDTH));
-
-	repopulate_terrain(start_x, start_z);
-}
-
-
-// TODO: How do I do this?
-//void TerrainManager::cull_distant_terrain_segments(){
-//	for(unsigned int i = 0; i < terrain_segments.size(); i++){
-//		TerrainSegment* segment = terrain_segments[i];
-//		if(distance2d(segment->get_centre(), camera->getPositions()->cam_pos) > fog_distance_end + (segment_size / 2)){
-//			segment->set_draw(false);
-//		}
-//		else{
-//			segment->set_draw(true);
-//		}
-//	}
-//}
 

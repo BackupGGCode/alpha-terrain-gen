@@ -84,7 +84,7 @@ AlphaMain::AlphaMain() {
 	camera = new ControllableCamera(screen->w, screen->h, 1.0f);
 
 	// Init terrain manager
-	terrain_manager = new TerrainManager(terrain_texture, 60.0f, camera);
+	terrain_manager = new TerrainManager(terrain_texture, 120.0f, camera, 512);
 
 	glEnable(GL_NORMALIZE);
 

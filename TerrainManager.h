@@ -16,8 +16,17 @@
 
 class TerrainManager {
 private:
-	// Terrain settings
 
+	// These values hold the real world
+	// x and z coordinates of where the position of
+	// the array entry 0,0.
+	float array_start_value;
+
+	// World size in segments
+	// This is the width / height of a square world
+	unsigned int world_width;
+
+	// Terrain settings
 	float segment_size;
 
 	GLuint terrain_texture;
@@ -26,18 +35,19 @@ private:
 	// should be in memory at any givent ime
 	ControllableCamera* camera;
 
-	// Terrain Vectors
-	std::vector<TerrainSegment*> terrain_segments;
+	// Terrain array
+	TerrainSegment** terrain_segments;
 
 	void repopulate_terrain(float start_x, float start_z);
+
+	float translate_to_index_coordinates(float x);
+	float get_nearest_segment_start(float x);
 public:
 	TerrainManager(GLuint terrain_texture, GLfloat segment_size,
-			ControllableCamera* camera);
+			ControllableCamera* camera, unsigned int world_width);
 	virtual ~TerrainManager();
 	void draw();
 	void reset();
-	// TODO: Terrain culling / updating
-	void check_for_distant_segments();
 };
 
 #endif /* TERRAINMANAGER_H_ */

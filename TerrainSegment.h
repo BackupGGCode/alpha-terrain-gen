@@ -28,6 +28,7 @@ private:
 	Vector3D centre;
 
 public:
+	TerrainSegment();
 	TerrainSegment(float x, float z, float segment_size, float quad_size,
 			GLuint terrain_texture);
 	virtual ~TerrainSegment();

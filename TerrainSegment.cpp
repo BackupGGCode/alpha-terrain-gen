@@ -19,6 +19,10 @@
 // TODO: Should work with 2, 4 temp fix
 #define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 4
 
+TerrainSegment::TerrainSegment(){
+
+}
+
 TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size,
 		GLuint terrain_texture) {
 
