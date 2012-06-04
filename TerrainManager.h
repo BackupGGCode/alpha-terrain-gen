@@ -38,6 +38,11 @@ private:
 	// Terrain array
 	TerrainSegment** terrain_segments;
 
+	// Draw Table
+	// Used to determine what is being drawn,
+	// and which segments should be removed from memory
+	bool* draw_table;
+
 	float translate_to_index_coordinates(float x);
 	float get_nearest_segment_start(float x);
 

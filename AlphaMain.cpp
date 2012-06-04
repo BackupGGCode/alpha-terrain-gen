@@ -163,9 +163,7 @@ void AlphaMain::reshape(int width, int height) {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	// TODO: Change me back
-//	glFrustum(-1.0, 1.0, -h, h, 5.0, fog_distance_end);
-	glFrustum(-1.0, 1.0, -h, h, 5.0, 10000);
+	glFrustum(-1.0, 1.0, -h, h, 5.0, fog_distance_end);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }

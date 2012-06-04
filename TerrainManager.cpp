@@ -10,17 +10,19 @@
 
 #define SEGMENT_DRAW_COUNT 8
 
-// TODO: Limiting scope
-// I can make things happen by having an array of TerrainSegments which only get
-// initialized when required
-// Might make the whole thing more manageable?
+SDL_sem *draw_table_lock = NULL;
 
 TerrainManager::TerrainManager(GLuint terrain_texture, GLfloat segment_size,
 		ControllableCamera* camera, unsigned int world_width) {
 
 	this->world_width = world_width;
 	this->camera = camera;
+
 	terrain_segments = new TerrainSegment*[world_width * world_width];
+
+	// Draw Table
+	draw_table = new bool[world_width * world_width];
+	draw_table_lock = SDL_CreateSemaphore(1);
 
 	// Set all segments to NULL
 	for (unsigned int i = 0; i < world_width; i++) {
@@ -37,8 +39,6 @@ TerrainManager::TerrainManager(GLuint terrain_texture, GLfloat segment_size,
 	this->segment_size = segment_size;
 
 	array_start_value = 0 - (world_width / 2 * segment_size);
-
-	repopulate_terrain();
 }
 
 TerrainManager::~TerrainManager() {
@@ -72,6 +72,7 @@ void TerrainManager::repopulate_terrain() {
 	int start_j = (int) translate_to_index_coordinates(z);
 
 	// Statically generate terrain segments
+	// TODO: Check for the boundaries of the world array
 	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
 		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
 			if (terrain_segments[(i * world_width) + j] == NULL) {
@@ -101,9 +102,17 @@ void TerrainManager::initialize() {
 	unsigned int start_i = (int) translate_to_index_coordinates(x);
 	unsigned int start_j = (int) translate_to_index_coordinates(z);
 
+	SDL_SemWait(draw_table_lock);
+	for(unsigned int i = 0; i < world_width * world_width; i++){
+		draw_table[i] = false;
+	}
+
 	/* Initialise terrain segments */
 	for (unsigned int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
 		for (unsigned int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
+			// Update the draw table, so that this information to inform the
+			// garbage collection that this segment is being drawn
+			draw_table[(i * world_width) + j] = true;
 			TerrainSegment* current_segment = terrain_segments[(i * world_width)
 					+ j];
 			if (current_segment != NULL
@@ -115,39 +124,20 @@ void TerrainManager::initialize() {
 			}
 		}
 	}
+	SDL_SemPost(draw_table_lock);
 }
 
-// TODO: Not working right, needs fixing.
 void TerrainManager::erase_distant_segments() {
-	float start_x = get_nearest_segment_start(
-			camera->getPositions()->cam_pos.x
-					- ((segment_size * SEGMENT_DRAW_COUNT)));
-	float start_z = get_nearest_segment_start(
-			camera->getPositions()->cam_pos.z
-					- ((segment_size * SEGMENT_DRAW_COUNT)));
-
-	float x = start_x;
-	float z = start_z;
-
-	unsigned int start_i = (int) translate_to_index_coordinates(x);
-	unsigned int start_j = (int) translate_to_index_coordinates(z);
-
+	SDL_SemWait(draw_table_lock);
 	for (unsigned int i = 0; i < world_width; i++) {
 		for (unsigned int j = 0; j < world_width; j++) {
-
-			if ((i < start_i && j < start_j)
-					|| (i > start_i + SEGMENT_DRAW_COUNT * 2
-							&& j > start_j + SEGMENT_DRAW_COUNT * 2)) {
-
-				TerrainSegment* current_segment = terrain_segments[(i
-						* world_width) + j];
-				if (current_segment != NULL) {
-					delete (current_segment);
-					current_segment = NULL;
-				}
+			if(!draw_table[(i * world_width) + j]){
+				delete(terrain_segments[(i * world_width) + j]);
+				terrain_segments[(i * world_width) + j] = NULL;
 			}
 		}
 	}
+	SDL_SemPost(draw_table_lock);
 }
 
 float TerrainManager::translate_to_index_coordinates(float x) {
@@ -167,10 +157,8 @@ void TerrainManager::draw() {
 	int start_i = (int) translate_to_index_coordinates(start_x);
 	int start_j = (int) translate_to_index_coordinates(start_z);
 	// Draw Terrain
-//	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
-//		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
-	for (int i = 0; i < world_width; i++) {
-		for (int j = 0; j < world_width; j++) {
+	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
+		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
 			TerrainSegment* current_segment = terrain_segments[(i * world_width)
 					+ j];
 			if (current_segment != NULL) {
