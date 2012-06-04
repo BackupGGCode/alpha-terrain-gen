@@ -27,8 +27,6 @@ private:
 
 	Vector3D centre;
 
-	bool drawing;
-
 public:
 	TerrainSegment(float x, float z, float segment_size, float quad_size,
 			GLuint terrain_texture);
@@ -38,9 +36,6 @@ public:
 	Vector3D get_centre();
 
 	GLuint terrain_GL_obj;
-
-	void set_draw(bool);
-	bool get_draw();
 
 private:
 	Quad* calculate_new_quad(float x, float z, float size);

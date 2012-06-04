@@ -80,8 +80,11 @@ AlphaMain::AlphaMain() {
 	glFogf(GL_FOG_END, fog_distance_end);
 	glEnable(GL_FOG);
 
+	// Init camera
+	camera = new ControllableCamera(screen->w, screen->h, 1.0f);
+
 	// Init terrain manager
-	terrain_manager = new TerrainManager(terrain_texture);
+	terrain_manager = new TerrainManager(terrain_texture, 60.0f, camera);
 
 	glEnable(GL_NORMALIZE);
 
@@ -291,6 +294,9 @@ void AlphaMain::handle_event(SDL_Event event)
 							texture_mapping = false;
 						}
 						break;
+					case SDLK_r:
+						terrain_manager->reset();
+						break;
 					default:
 						break;
 					}
@@ -318,7 +324,6 @@ void AlphaMain::run(){
 		float timePerFrame = 1000 / desiredFPS;
 
 		reshape(screen->w, screen->h);
-		camera = new ControllableCamera(screen->w, screen->h, 1.0f);
 
 		// Hide cursor for mouse movement
 		SDL_ShowCursor(false);
@@ -344,7 +349,7 @@ void AlphaMain::run(){
 				SDL_GL_SwapBuffers();
 				lastDrawTime = SDL_GetTicks();
 			} else {
-				Sleep(0);
+				SDL_Delay(0);
 			}
 		}
 }

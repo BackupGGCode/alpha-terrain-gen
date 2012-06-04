@@ -22,8 +22,6 @@
 TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size,
 		GLuint terrain_texture) {
 
-	drawing = true;
-
 	this->terrain_texture_id = terrain_texture;
 
 	quad_count_width = (int)(segment_size / quad_size);
@@ -144,14 +142,6 @@ Quad* TerrainSegment::calculate_new_quad(float x, float z, float size){
 
 	Quad *quad = new Quad(vector1, vector2, vector3, vector4);
 	return quad;
-}
-
-void TerrainSegment::set_draw(bool drawing){
-	 this->drawing = drawing;
-}
-
-bool TerrainSegment::get_draw(){
-	return drawing;
 }
 
 Vector3D TerrainSegment::get_centre(){
