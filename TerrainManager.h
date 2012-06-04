@@ -38,16 +38,18 @@ private:
 	// Terrain array
 	TerrainSegment** terrain_segments;
 
-	void repopulate_terrain(float start_x, float start_z);
-
 	float translate_to_index_coordinates(float x);
 	float get_nearest_segment_start(float x);
+
+	void erase_distant_segments();
+
 public:
 	TerrainManager(GLuint terrain_texture, GLfloat segment_size,
 			ControllableCamera* camera, unsigned int world_width);
 	virtual ~TerrainManager();
 	void draw();
-	void reset();
+	void repopulate_terrain();
+	void initialize();
 };
 
 #endif /* TERRAINMANAGER_H_ */

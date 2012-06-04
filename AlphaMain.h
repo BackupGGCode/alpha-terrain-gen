@@ -14,6 +14,7 @@
 
 // SDL includes
 #include "SDL.h"
+#include "SDL_thread.h"
 
 // Terrain gen
 #include "TerrainManager.h"
@@ -32,6 +33,7 @@
 class AlphaMain {
 private:
 	SDL_Surface *screen;
+	SDL_Thread *terrain_gen_thread;
 
 	GLuint T0;
 	GLuint frames;
@@ -46,12 +48,8 @@ private:
 
 	bool texture_mapping;
 
-	bool quit_flag;
-
 	GLfloat fog_distance_end;
 	GLfloat fog_distance_start;
-
-	TerrainManager* terrain_manager;
 
 	// Keyboard input struct for camera control
 	Inputs* input;
@@ -64,10 +62,17 @@ private:
     void handle_event(SDL_Event event);
 
 public:
+	static bool quit_flag;
+	static TerrainManager* terrain_manager;
+
 	AlphaMain();
 	virtual ~AlphaMain();
 
 	void run();
+
+	// Thread
+	static int terrain_regeneration(void* data);
+
 };
 
 #endif /* ALPHAMAIN_H_ */

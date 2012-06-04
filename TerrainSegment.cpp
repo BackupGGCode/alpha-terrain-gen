@@ -20,12 +20,12 @@
 #define EXTRA_QUADS_FOR_VERTEX_NORMAL_CALC 4
 
 TerrainSegment::TerrainSegment(){
-
 }
 
 TerrainSegment::TerrainSegment(float x, float z, float segment_size, float quad_size,
 		GLuint terrain_texture) {
 
+	initialized = false;
 	this->terrain_texture_id = terrain_texture;
 
 	quad_count_width = (int)(segment_size / quad_size);
@@ -133,6 +133,7 @@ void TerrainSegment::init_quads(){
 	glEnable(GL_CULL_FACE);
 	glDepthMask(GL_TRUE);
 #endif
+	initialized = true;
 }
 
 #define TERRAIN_MULTIPLIER 10
@@ -150,4 +151,8 @@ Quad* TerrainSegment::calculate_new_quad(float x, float z, float size){
 
 Vector3D TerrainSegment::get_centre(){
 	return centre;
+}
+
+bool TerrainSegment::get_initialized(){
+	return initialized;
 }

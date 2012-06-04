@@ -14,7 +14,14 @@
 #include <string.h>
 #include <algorithm>
 
+// Static declarations
+bool AlphaMain::quit_flag;
+TerrainManager* AlphaMain::terrain_manager;
+
 AlphaMain::AlphaMain() {
+	// Thread
+	terrain_gen_thread = NULL;
+
 	SDL_Init(SDL_INIT_VIDEO);
 	// Init screen
 	screen = SDL_SetVideoMode(800, 600, 16, SDL_OPENGL | SDL_RESIZABLE);
@@ -84,7 +91,7 @@ AlphaMain::AlphaMain() {
 	camera = new ControllableCamera(screen->w, screen->h, 1.0f);
 
 	// Init terrain manager
-	terrain_manager = new TerrainManager(terrain_texture, 120.0f, camera, 512);
+	AlphaMain::terrain_manager = new TerrainManager(terrain_texture, 120.0f, camera, 512);
 
 	glEnable(GL_NORMALIZE);
 
@@ -97,7 +104,7 @@ AlphaMain::AlphaMain() {
 }
 
 AlphaMain::~AlphaMain() {
-	delete(terrain_manager);
+	delete(AlphaMain::terrain_manager);
 	delete(input);
 }
 
@@ -155,7 +162,10 @@ void AlphaMain::reshape(int width, int height) {
 	glViewport(0, 0, (GLint) width, (GLint) height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-1.0, 1.0, -h, h, 5.0, fog_distance_end);
+
+	// TODO: Change me back
+//	glFrustum(-1.0, 1.0, -h, h, 5.0, fog_distance_end);
+	glFrustum(-1.0, 1.0, -h, h, 5.0, 10000);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }
@@ -182,7 +192,7 @@ void AlphaMain::draw() {
 	glPushMatrix();
 
 	// Draw terrain
-	terrain_manager->draw();
+	AlphaMain::terrain_manager->draw();
 
 	glPopMatrix();
 
@@ -247,7 +257,7 @@ void AlphaMain::handle_event(SDL_Event event)
 				case SDL_KEYDOWN:
 					switch (event.key.keysym.sym) {
 					case SDLK_ESCAPE:
-						quit_flag = 1;
+						this->quit_flag = 1;
 						break;
 					case SDLK_c:
 						// Test function - prints out camera position
@@ -295,7 +305,7 @@ void AlphaMain::handle_event(SDL_Event event)
 						}
 						break;
 					case SDLK_r:
-						terrain_manager->reset();
+						AlphaMain::terrain_manager->repopulate_terrain();
 						break;
 					default:
 						break;
@@ -312,7 +322,7 @@ void AlphaMain::handle_event(SDL_Event event)
 
 /** Main Run loop */
 void AlphaMain::run(){
-		quit_flag = false;
+		AlphaMain::quit_flag = false;
 
 		// When was the last time the scene was drawn?
 		double lastDrawTime = 0;
@@ -331,7 +341,9 @@ void AlphaMain::run(){
 		// Keep mouse within confines of the window
 		SDL_WM_GrabInput(SDL_GRAB_ON);
 
-		while (!quit_flag) {
+		terrain_gen_thread = SDL_CreateThread(terrain_regeneration, NULL);
+
+		while (!AlphaMain::quit_flag) {
 			SDL_Event event;
 
 			while (SDL_PollEvent(&event)) {
@@ -340,6 +352,7 @@ void AlphaMain::run(){
 
 			// Check redraw rate
 			if (SDL_GetTicks() > lastDrawTime + timePerFrame) {
+				AlphaMain::terrain_manager->initialize();
 				draw();
 				// Camera movement is not activated unless the screen is in OS focus
 				if(window_active){
@@ -352,5 +365,12 @@ void AlphaMain::run(){
 				SDL_Delay(0);
 			}
 		}
+}
+
+int AlphaMain::terrain_regeneration(void* data){
+	while(!AlphaMain::quit_flag){
+		AlphaMain::terrain_manager->repopulate_terrain();
+	}
+	return 0;
 }
 

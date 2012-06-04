@@ -8,7 +8,7 @@
 #include "TerrainManager.h"
 #include <Math.h>
 
-#define SEGMENT_DRAW_COUNT 9
+#define SEGMENT_DRAW_COUNT 8
 
 // TODO: Limiting scope
 // I can make things happen by having an array of TerrainSegments which only get
@@ -38,12 +38,7 @@ TerrainManager::TerrainManager(GLuint terrain_texture, GLfloat segment_size,
 
 	array_start_value = 0 - (world_width / 2 * segment_size);
 
-	float start_x = get_nearest_segment_start(camera->getPositions()->cam_pos.x
-			- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
-	float start_z = get_nearest_segment_start(camera->getPositions()->cam_pos.z
-			- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
-
-	repopulate_terrain(start_x, start_z);
+	repopulate_terrain();
 }
 
 TerrainManager::~TerrainManager() {
@@ -55,12 +50,18 @@ TerrainManager::~TerrainManager() {
 	delete (terrain_segments);
 }
 
-float TerrainManager::get_nearest_segment_start(float x){
+float TerrainManager::get_nearest_segment_start(float x) {
 	return x - (fmod(x, segment_size));
 }
 
 /** Repopulates the terrain around the camera location */
-void TerrainManager::repopulate_terrain(float start_x, float start_z) {
+void TerrainManager::repopulate_terrain() {
+	float start_x = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.x
+					- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
+	float start_z = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.z
+					- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
 	// This must be a value that will divide evenly into segment_size
 	float quad_size = 3.0f;
 
@@ -71,7 +72,6 @@ void TerrainManager::repopulate_terrain(float start_x, float start_z) {
 	int start_j = (int) translate_to_index_coordinates(z);
 
 	// Statically generate terrain segments
-	// TODO: Change the magic numbers
 	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
 		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
 			if (terrain_segments[(i * world_width) + j] == NULL) {
@@ -84,27 +84,70 @@ void TerrainManager::repopulate_terrain(float start_x, float start_z) {
 		x += segment_size;
 	}
 
+	erase_distant_segments();
+}
+
+void TerrainManager::initialize() {
+	float start_x = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.x
+					- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
+	float start_z = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.z
+					- ((this->segment_size * SEGMENT_DRAW_COUNT) / 2));
+
+	float x = start_x;
+	float z = start_z;
+
+	unsigned int start_i = (int) translate_to_index_coordinates(x);
+	unsigned int start_j = (int) translate_to_index_coordinates(z);
+
 	/* Initialise terrain segments */
-	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
-		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
+	for (unsigned int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
+		for (unsigned int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
 			TerrainSegment* current_segment = terrain_segments[(i * world_width)
 					+ j];
-
-			current_segment->terrain_GL_obj = glGenLists(1);
-			glNewList(current_segment->terrain_GL_obj, GL_COMPILE);
-			current_segment->init_quads();
-			glEndList();
+			if (current_segment != NULL
+					&& !current_segment->get_initialized()) {
+				current_segment->terrain_GL_obj = glGenLists(1);
+				glNewList(current_segment->terrain_GL_obj, GL_COMPILE);
+				current_segment->init_quads();
+				glEndList();
+			}
 		}
 	}
 }
 
-void TerrainManager::reset() {
-	float start_x = get_nearest_segment_start(camera->getPositions()->cam_pos.x
-			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
-	float start_z = get_nearest_segment_start(camera->getPositions()->cam_pos.z
-			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
+// TODO: Not working right, needs fixing.
+void TerrainManager::erase_distant_segments() {
+	float start_x = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.x
+					- ((segment_size * SEGMENT_DRAW_COUNT)));
+	float start_z = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.z
+					- ((segment_size * SEGMENT_DRAW_COUNT)));
 
-	repopulate_terrain(start_x, start_z);
+	float x = start_x;
+	float z = start_z;
+
+	unsigned int start_i = (int) translate_to_index_coordinates(x);
+	unsigned int start_j = (int) translate_to_index_coordinates(z);
+
+	for (unsigned int i = 0; i < world_width; i++) {
+		for (unsigned int j = 0; j < world_width; j++) {
+
+			if ((i < start_i && j < start_j)
+					|| (i > start_i + SEGMENT_DRAW_COUNT * 2
+							&& j > start_j + SEGMENT_DRAW_COUNT * 2)) {
+
+				TerrainSegment* current_segment = terrain_segments[(i
+						* world_width) + j];
+				if (current_segment != NULL) {
+					delete (current_segment);
+					current_segment = NULL;
+				}
+			}
+		}
+	}
 }
 
 float TerrainManager::translate_to_index_coordinates(float x) {
@@ -114,16 +157,20 @@ float TerrainManager::translate_to_index_coordinates(float x) {
 }
 
 void TerrainManager::draw() {
-	float start_x = get_nearest_segment_start(camera->getPositions()->cam_pos.x
-			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
-	float start_z = get_nearest_segment_start(camera->getPositions()->cam_pos.z
-			- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
+	float start_x = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.x
+					- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
+	float start_z = get_nearest_segment_start(
+			camera->getPositions()->cam_pos.z
+					- ((segment_size * SEGMENT_DRAW_COUNT) / 2));
 
 	int start_i = (int) translate_to_index_coordinates(start_x);
 	int start_j = (int) translate_to_index_coordinates(start_z);
 	// Draw Terrain
-	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
-		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
+//	for (int i = start_i; i < start_i + SEGMENT_DRAW_COUNT; i++) {
+//		for (int j = start_j; j < start_j + SEGMENT_DRAW_COUNT; j++) {
+	for (int i = 0; i < world_width; i++) {
+		for (int j = 0; j < world_width; j++) {
 			TerrainSegment* current_segment = terrain_segments[(i * world_width)
 					+ j];
 			if (current_segment != NULL) {
@@ -132,4 +179,3 @@ void TerrainManager::draw() {
 		}
 	}
 }
-

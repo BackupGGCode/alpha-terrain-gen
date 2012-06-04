@@ -27,6 +27,8 @@ private:
 
 	Vector3D centre;
 
+	bool initialized;
+
 public:
 	TerrainSegment();
 	TerrainSegment(float x, float z, float segment_size, float quad_size,
@@ -35,6 +37,8 @@ public:
 	void init_quads();
 
 	Vector3D get_centre();
+
+	bool get_initialized();
 
 	GLuint terrain_GL_obj;
 
